@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "289566404435",
+    "project_id": "beatsfit-f232f",
+    "storage_bucket": "beatsfit-f232f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:289566404435:android:fc7e19f62187c3b8e8fba6",
+        "android_client_info": {
+          "package_name": "com.example.beatsfit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "289566404435-bhi6j8j089uigd2h8lit4kfo6rao6mii.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.beatsfit",
+            "certificate_hash": "0a7d1f1a55f53ebd6550c6389e8d61319216e1e8"
+          }
+        },
+        {
+          "client_id": "289566404435-f0gob11s30incg22ac30m46b0uiggmrs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcPuXOliJLGyUHc3qvDFZi_6jCEBkliwo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "289566404435-f0gob11s30incg22ac30m46b0uiggmrs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
