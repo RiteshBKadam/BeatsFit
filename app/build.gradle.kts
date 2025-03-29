@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    id("kotlin-kapt")
 
 }
 
@@ -54,19 +55,33 @@ dependencies {
     implementation (libs.accompanist.systemuicontroller)
     implementation (libs.androidx.work.runtime.ktx)
     implementation(libs.okhttp)
+    implementation (libs.androidx.navigation.compose.v289)
+    implementation(libs.volley)
+    implementation(libs.play.services.fido)
+    implementation(libs.play.services.fido)
+    kapt (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.runtime)
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    // Jetpack Compose (if not already added)
+    implementation ("androidx.compose.runtime:runtime-livedata:1.7.8")
+
+
+
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.lifecycle.runtime.compose.android)
-    implementation(libs.androidx.navigation.compose)
     implementation(libs.play.services.auth)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.room.common)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.adapters)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

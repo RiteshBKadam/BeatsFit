@@ -1,4 +1,4 @@
-package com.example.beatsfit
+package com.example.beatsfit.model
 
 import android.Manifest
 import android.content.Context
@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavHostController
-import com.example.locationapp.LocationUtils
+import com.example.beatsfit.view.MainActivity
+import com.example.beatsfit.viewmodel.LocationViewModel
+import com.example.beatsfit.util.LocationUtils
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 

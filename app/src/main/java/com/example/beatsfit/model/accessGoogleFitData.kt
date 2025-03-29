@@ -1,8 +1,9 @@
-package com.example.beatsfit
+package com.example.beatsfit.model
 
 import android.content.Context
 import android.util.Log
-import com.example.locationapp.LocationUtils
+import com.example.beatsfit.viewmodel.LocationViewModel
+import com.example.beatsfit.util.LocationUtils
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.data.DataType

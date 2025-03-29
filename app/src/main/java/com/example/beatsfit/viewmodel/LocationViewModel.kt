@@ -1,4 +1,4 @@
-package com.example.beatsfit
+package com.example.beatsfit.viewmodel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf

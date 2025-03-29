@@ -1,9 +1,11 @@
-package com.example.beatsfit
+package com.example.beatsfit.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.locationapp.LocationUtils
+import com.example.beatsfit.model.HealthData
+import com.example.beatsfit.model.fetchGoogleFitData
+import com.example.beatsfit.util.LocationUtils
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +32,7 @@ class BeatsfitViewModel : ViewModel() {
         _isPermissionGranted.value = granted
     }
 
-    fun fetchHealthData(
+    private fun fetchHealthData(
         context: Context,
         account: GoogleSignInAccount,
         locationUtils: LocationUtils,

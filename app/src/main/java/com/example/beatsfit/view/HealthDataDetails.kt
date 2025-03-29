@@ -1,6 +1,5 @@
-package com.example.beatsfit
+package com.example.beatsfit.view
 
-import BottomAppBarWithIcons
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,8 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.example.locationapp.LocationUtils
+import com.example.beatsfit.R
+import com.example.beatsfit.viewmodel.BeatsfitViewModel
+import com.example.beatsfit.viewmodel.LocationViewModel
+import com.example.beatsfit.util.LocationUtils
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +38,8 @@ fun HealthDetailScreen(
     locationViewModel: LocationViewModel,
     locationUtils: LocationUtils
 ) {
-    val healthData by beatsfitViewModel.healthData.collectAsState()
+
+    val healthData by beatsfitViewModel.healthData.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         beatsfitViewModel.startFetchingHealthData(

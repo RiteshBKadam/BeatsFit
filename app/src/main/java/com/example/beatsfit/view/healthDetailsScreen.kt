@@ -1,6 +1,5 @@
-package com.example.beatsfit
+package com.example.beatsfit.view
 
-import BottomAppBarWithIcons
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.beatsfit.R
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

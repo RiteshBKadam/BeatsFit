@@ -1,8 +1,11 @@
+package com.example.beatsfit.view
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -37,20 +40,24 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.beatsfit.BeatsfitViewModel
-import com.example.beatsfit.HealthData
-import com.example.beatsfit.REQUEST_OAUTH_REQUEST_CODE
-import com.example.beatsfit.fitnessOptions
-import com.example.locationapp.LocationUtils
-import com.example.beatsfit.LocationViewModel
+import com.example.beatsfit.viewmodel.BeatsfitViewModel
+import com.example.beatsfit.model.HealthData
+import com.example.beatsfit.util.LocationUtils
+import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.R
+import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataType
 
-@OptIn(ExperimentalMaterial3Api::class)
+private const val REQUEST_OAUTH_REQUEST_CODE=1
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun FitnessScreen(navController: NavController, context: Context, account: GoogleSignInAccount) {
+fun FitnessScreen(navController: NavController, context: Context, account: GoogleSignInAccount,beatsfitViewModel: BeatsfitViewModel) {
+    val fitnessOptions = buildFitnessOptions()
+
     var isPermissionGranted by remember { mutableStateOf(false) }
     if (GoogleSignIn.hasPermissions(account, fitnessOptions)) {
         // Check if permissions are already granted
@@ -94,7 +101,6 @@ fun FitnessScreen(navController: NavController, context: Context, account: Googl
             isPermissionGranted = true
         }
     } else {
-        // Request OAuth permissions from Google
         GoogleSignIn.requestPermissions(
             context as Activity,
             REQUEST_OAUTH_REQUEST_CODE,
@@ -106,7 +112,10 @@ fun FitnessScreen(navController: NavController, context: Context, account: Googl
 
     if (isPermissionGranted) {
 
-        homeScreen(context,account,navController)
+        homeScreen(
+            context, account, navController,  beatsfitViewModel,
+
+        )
 
     } else {
         Box(
@@ -125,154 +134,119 @@ fun FitnessScreen(navController: NavController, context: Context, account: Googl
         }
     }
 }
-  @OptIn(ExperimentalMaterial3Api::class)
-  @Composable
-  fun homeScreen(context: Context,account: GoogleSignInAccount,navController:NavController) {
-        val beatsfitViewModel: BeatsfitViewModel = viewModel()
-        var isExpanded by remember { mutableStateOf(false) }
 
-        val alphaVal by animateFloatAsState(
-            targetValue = if (isExpanded) 0.6f else 1f,
-            animationSpec = tween(durationMillis = 0)
+@Composable
+fun homeScreen(context: Context,account: GoogleSignInAccount,navController:NavController, beatsfitViewModel: BeatsfitViewModel) {
+
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val alphaVal by animateFloatAsState(
+        targetValue = if (isExpanded) 0.6f else 1f,
+        animationSpec = tween(durationMillis = 0)
+    )
+    val locationUtils = LocationUtils(context)
+    val locationViewModel: LocationViewModel = viewModel()
+
+    val scrollState = rememberScrollState()
+
+    val healthData by beatsfitViewModel.healthData.collectAsState()
+
+
+    // Animate position changes of the FAB using animateDpAsState
+    val offsetX by animateDpAsState(
+        targetValue = if (isExpanded) (-70).dp else 0.dp,
+        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
+    )
+
+    val offsetY1 by animateDpAsState(
+        targetValue = if (isExpanded) (-30).dp else 0.dp,
+        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
+    )
+
+    val offsetX2 by animateDpAsState(
+        targetValue = if (isExpanded) (0).dp else 0.dp,
+        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
+    )
+
+    val offsetY2 by animateDpAsState(
+        targetValue = if (isExpanded) (-73).dp else 0.dp,
+        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
+    )
+
+    LaunchedEffect(Unit) {
+        beatsfitViewModel.startFetchingHealthData(
+            context, account,
+            locationUtils,
+            locationViewModel
         )
-        val locationUtils = LocationUtils(context)
-        val locationViewModel: LocationViewModel = viewModel()
-
-        val scrollState = rememberScrollState()
-
-        val healthData by beatsfitViewModel.healthData.collectAsState()
-
-        val isPermissionGranted by beatsfitViewModel.isPermissionGranted.collectAsState()
-        val transition = updateTransition(targetState = isExpanded, label = "FAB Transition")
-        // Animate position changes of the FAB using animateDpAsState
-        val offsetX by animateDpAsState(
-            targetValue = if (isExpanded) (-70).dp else 0.dp,
-            animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
-        )
-
-        val offsetY1 by animateDpAsState(
-            targetValue = if (isExpanded) (-30).dp else 0.dp,
-            animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
-        )
-
-        val offsetX2 by animateDpAsState(
-            targetValue = if (isExpanded) (0).dp else 0.dp,
-            animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
-        )
-
-        val offsetY2 by animateDpAsState(
-            targetValue = if (isExpanded) (-73).dp else 0.dp,
-            animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
-        )
-
-        LaunchedEffect(Unit) {
-            beatsfitViewModel.startFetchingHealthData(
-                context, account,
-                locationUtils,
-                locationViewModel
-            )
-        }
+    }
 
 
-            Scaffold(
-                modifier = Modifier.background(Color(0xFF0f191f)),
-                topBar = {
-                    TopAppBar(
-                        title = {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 15.dp, end = 15.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Row {
-                                    Text(
-                                        "Good Morning!",
-                                        color = Color.White,
-                                        fontSize = 24.sp
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        "Aryan",
-                                        color = Color(0xFFE3A356),
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.LightGray)
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.smallTopAppBarColors(
-                            containerColor = Color(
-                                0xFF0f191f
-                            )
-                        )
-                    )
-                },
-                bottomBar = { BottomAppBarWithIcons(navController) },
-                floatingActionButton = {
-                    Box {
+        Scaffold(
+            modifier = Modifier.background(Color(0xFF0f191f)),
+            topBar = {
+                TopAppBar(navController)
+            },
+            bottomBar = { BottomAppBarWithIcons(navController) },
+            floatingActionButton = {
+                Box {
 
-                        FloatingActionButton(
-                            onClick = { isExpanded = !isExpanded },
-                            containerColor = Color(0xFFFF0000),
-                            shape = CircleShape,
-                            modifier = Modifier
-                                .offset(x = offsetX, y = offsetY1)
-                                .border(1.dp, Color.Red, CircleShape)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.call),
-                                contentDescription = "Share"
-                            )
-                        }
-                        FloatingActionButton(
-                            onClick = { isExpanded = !isExpanded },
-                            containerColor = Color(0xFFFF0000),
-                            shape = CircleShape,
-                            modifier = Modifier
-                                .offset(x = offsetX2, y = offsetY2)
-                                .border(1.dp, Color.Red, CircleShape)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.baseline_notifications_active_24),
-                                contentDescription = "Edit"
-                            )
-                        }
-
-                        FloatingActionButton(
-                            onClick = { isExpanded = !isExpanded },
-                            containerColor = Color(0xFFFF0000),
-                            shape = CircleShape,
-                            modifier = Modifier.border(1.dp, Color.Red, CircleShape)
-
-                        ) {
-                            Text("SOS")
-                        }
-                    }
-                },
-                content = {
-                    Box(
+                    FloatingActionButton(
+                        onClick = { isExpanded = !isExpanded },
+                        containerColor = Color(0xFFFF0000),
+                        shape = CircleShape,
                         modifier = Modifier
-                            .padding(it)
-                            .verticalScroll(scrollState)
-                            .fillMaxSize()
+                            .offset(x = offsetX, y = offsetY1)
+                            .border(1.dp, Color.Red, CircleShape)
                     ) {
+                        Icon(
+                            painter = painterResource(R.drawable.call),
+                            contentDescription = "Share"
+                        )
+                    }
+                    FloatingActionButton(
+                        onClick = { isExpanded = !isExpanded },
+                        containerColor = Color(0xFFFF0000),
+                        shape = CircleShape,
+                        modifier = Modifier
+                            .offset(x = offsetX2, y = offsetY2)
+                            .border(1.dp, Color.Red, CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_notifications_active_24),
+                            contentDescription = "Edit"
+                        )
+                    }
+                    Toast.makeText(context, account.photoUrl?.path ?: "nll", Toast.LENGTH_SHORT).show()
 
-                        FitnessContent(healthData, alphaVal)
+                    FloatingActionButton(
+                        onClick = { isExpanded = !isExpanded },
+                        containerColor = Color(0xFFFF0000),
+                        shape = CircleShape,
+                        modifier = Modifier.border(1.dp, Color.Red, CircleShape)
+
+                    ) {
+                        Text("SOS")
                     }
                 }
-            )
-    }
+            },
+            content = {
+                Box(
+                    modifier = Modifier
+                        .padding(it)
+                        .verticalScroll(scrollState)
+                        .fillMaxSize()
+                ) {
+
+                    FitnessContent(healthData, alphaVal)
+                }
+            }
+        )
+}
 @Composable
 fun FitnessContent(healthData: HealthData, alphaVal:Float) {
-    // make this column dim on expansion of fab
+    var searchText by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -282,27 +256,32 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float) {
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Search bar
         TextField(
-            value = "",
-            onValueChange = {},
+            value =searchText,
+            onValueChange = {searchText=it},
+            singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp),
+                .height(50.dp),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White,
-                unfocusedIndicatorColor = Color.Transparent, // Remove underline
-                focusedIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black
             ),
+            textStyle =TextStyle(fontSize =18.sp, ),
+            placeholder = { Text("Search...", fontSize = 18.sp) },
             shape = RoundedCornerShape(24.dp),
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    imageVector = Icons.Filled.Search,
                     contentDescription = "Search"
                 )
             }
         )
+
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -539,4 +518,30 @@ fun StatItem(
             fontSize = 14.sp
         )
     }
+}
+fun logout(navController: NavController, context: Context,userViewModel: UserViewModel) {
+    val googleSignInClient =
+        GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN)
+    googleSignInClient.revokeAccess()
+    userViewModel.clearDatabase()
+    googleSignInClient.signOut()
+        .addOnCompleteListener {
+
+            navController.navigate("initiator") {
+                popUpTo("home_screen") { inclusive = true }
+            }
+        }
+}
+
+fun buildFitnessOptions(): FitnessOptions {
+    return FitnessOptions.builder()
+        .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_WORKOUT_EXERCISE, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
+        .build()
 }

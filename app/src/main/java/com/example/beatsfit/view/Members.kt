@@ -1,10 +1,10 @@
-package com.example.beatsfit
+package com.example.beatsfit.view
 
-import BottomAppBarWithIcons
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.beatsfit.R
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -38,45 +39,32 @@ data class Contact(
     val name: String,
     val phoneNumber: String
 )
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Members(account: GoogleSignInAccount, navController: NavController, context: Context) {
 
-    val savedContacts by produceState<List<Contact>>(
-        initialValue = emptyList(),
-        key1 = account
+
+    val savedContacts by produceState<List<Contact>?>( // Make nullable
+        initialValue = null, // Initial value is null (loading state)
+        key1 = account.id // Use account.id as key
     ) {
-        value = fetchSavedContacts(account)
+        value = fetchSavedContacts(account) // Load contacts
     }
+
+    // Navigation Side Effect:  Use LaunchedEffect with savedContacts and a condition
     LaunchedEffect(savedContacts) {
-        if (savedContacts.isEmpty()) {
+        if (savedContacts != null && savedContacts!!.isEmpty()) { // Check for loaded *and* empty
             delay(1200)
             navController.navigate("friends") {
                 popUpTo("members") { inclusive = true }
             }
         }
     }
+    Toast.makeText(context, navController.previousBackStackEntry?.destination?.route ?: "",Toast.LENGTH_LONG).show()
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 15.dp, end = 15.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically)
-                {
-                    Text("Members", color = Color.White, modifier = Modifier.padding(start = 2.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                    )
-                }
-                        },
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF0f191f))
-            )
+            TopAppBar(navController) // Pass in the navController to TopAppBar
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("friends") }) {
@@ -91,43 +79,65 @@ fun Members(account: GoogleSignInAccount, navController: NavController, context:
                 .padding(padding)
                 .background(Color(0xFF0f191f))
         ) {
-            when {
-                savedContacts.isEmpty() -> LoadingScreen()
-                else -> Column(
-                    modifier = Modifier
-                        .background(Color(0xFF0f191f))
-                        .fillMaxSize()
-                        .padding(top = 15.dp)
-                ) {
-                    Column {
-                        val contactList = savedContacts.take(4) // Handle up to 4 contacts dynamically
-                        val chunkedContacts = contactList.chunked(2) // Split into rows of 2
-
-                        chunkedContacts.forEach { rowContacts ->
-                            Row {
-                                rowContacts.forEach { contact ->
-                                    SavedContactCard(contact, context)
-                                }
-                            }
-                        }
+            when (savedContacts) {
+                null -> LoadingScreen()  // Display loading while savedContacts is null
+                else -> if (savedContacts!!.isEmpty()) {
+                    // Handle the empty case directly in the UI.  No need for EmptyContactScreen
+                    // as the navigation is handled by the LaunchedEffect.  Just display a message.
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF0f191f)),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            "No contacts found.  Redirecting...",
+                            color = Color.White
+                        )
                     }
+                } else {
+                    ContactListScreen(savedContacts!!, context)
+                }
+            }
+        }
+    }
+}
 
-                    Spacer(modifier = Modifier.height(15.dp))
+@Composable
+fun ContactListScreen(savedContacts: List<Contact>, context: Context) {
+    Column(
+        modifier = Modifier
+            .background(Color(0xFF0f191f))
+            .fillMaxSize()
+            .padding(top = 15.dp)
+    ) {
+        Column {
+            val contactList = savedContacts.take(4) // Handle up to 4 contacts dynamically
+            val chunkedContacts = contactList.chunked(2) // Split into rows of 2
 
-                    Row {
-                        SOSButton(
-                            text = "SOS Message",
-                            onClick = { /* Handle message action */ },
-                            modifier = Modifier.weight(1f)
-                        )
-                        SOSButton(
-                            text = "SOS Call",
-                            onClick = { /* Handle call action */ },
-                            modifier = Modifier.weight(1f)
-                        )
+            chunkedContacts.forEach { rowContacts ->
+                Row {
+                    rowContacts.forEach { contact ->
+                        SavedContactCard(contact, context)
                     }
                 }
             }
+        }
+
+        Spacer(modifier = Modifier.height(15.dp))
+
+        Row {
+            SOSButton(
+                text = "SOS Message",
+                onClick = { /* Handle message action */ },
+                modifier = Modifier.weight(1f)
+            )
+            SOSButton(
+                text = "SOS Call",
+                onClick = { /* Handle call action */ },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -159,7 +169,6 @@ fun SOSButton(
         )
     }
 }
-
 
 @SuppressLint("QueryPermissionsNeeded")
 @Composable
@@ -217,8 +226,6 @@ fun SavedContactCard(
                 maxLines = 2, // Limit to one line
                 overflow = TextOverflow.Ellipsis // Truncate with ellipsis
             )
-
-
             Row(
                 horizontalArrangement = Arrangement.spacedBy(30.dp)
             ) {

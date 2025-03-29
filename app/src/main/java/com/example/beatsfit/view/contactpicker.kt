@@ -1,4 +1,4 @@
-package com.example.beatsfit
+package com.example.beatsfit.view
 import android.content.Context
 import android.database.Cursor
 import android.provider.ContactsContract
@@ -196,7 +196,7 @@ fun ContactItem(
             )
             Column(modifier = Modifier.padding(start = 8.dp)) {
                 Text(
-                    text = contact.name,
+                    text = contact.name.trim().take(20),
                     fontSize = 18.sp,
                     color = if (isDisabled) Color.LightGray else Color(0xD3FFFFFF)
                 )

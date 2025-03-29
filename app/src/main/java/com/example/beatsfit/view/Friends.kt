@@ -1,4 +1,4 @@
-package com.example.beatsfit
+package com.example.beatsfit.view
 
 import android.Manifest
 import android.content.pm.PackageManager

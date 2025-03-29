@@ -17,6 +17,7 @@ lifecycleRuntimeComposeAndroid = "2.8.7"
 mapsCompose = "2.5.0"
 mapsSdk = "6.1.10"
 navigationCompose = "2.8.5"
+navigationComposeVersion = "2.8.9"
 okhttp = "4.10.0"
 playServicesAuth = "21.3.0"
 playServicesFitness = "21.2.0"
@@ -24,13 +25,22 @@ firebaseFirestoreKtx = "25.1.1"
 googleGmsGoogleServicesVersion = "4.4.2"
 firebaseFirestore = "25.1.1"
 playServicesLocation = "21.3.0"
+roomRuntime = "2.6.1"
 version = "1.22.0"
 workRuntimeKtx = "2.10.0"
+roomCommon = "2.6.1"
+roomKtx = "2.6.1"
+adapters = "3.2.0-alpha11"
+volley = "1.2.1"
+playServicesFido = "20.0.1"
 
 
 
 [libraries]
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
+androidx-navigation-compose-v289 = { module = "androidx.navigation:navigation-compose", version.ref = "navigationComposeVersion" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 map-display = { module = "com.tomtom.sdk.maps:map-display", version.ref = "version" }
 maps-sdk = { module = "org.osmdroid:osmdroid-android", version.ref = "mapsSdk" }
@@ -61,7 +71,6 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
-androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
@@ -71,6 +80,11 @@ provider-simulation = { module = "com.tomtom.sdk.location:provider-simulation", 
 provider-map-matched = { module = "com.tomtom.sdk.location:provider-map-matched", version.ref = "version" }
 route-planner-online = { module = "com.tomtom.sdk.routing:route-planner-online", version.ref = "version" }
 ui = { module = "com.tomtom.sdk.navigation:ui", version.ref = "version" }
+androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+androidx-adapters = { group = "androidx.databinding", name = "adapters", version.ref = "adapters" }
+volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
+play-services-fido = { group = "com.google.android.gms", name = "play-services-fido", version.ref = "playServicesFido" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

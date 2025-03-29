@@ -6,6 +6,7 @@ import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.util.Log
 import android.widget.Toast
+import com.example.beatsfit.model.SyncJobService
 import com.google.firebase.FirebaseApp
 
 class BeatsFitApplication : Application() {

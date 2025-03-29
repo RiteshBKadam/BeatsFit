@@ -1,8 +1,10 @@
-package com.example.beatsfit
+package com.example.beatsfit.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -20,6 +22,9 @@ import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.example.beatsfit.R
+import com.example.beatsfit.room.data.User
+import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -33,8 +38,10 @@ import com.google.firebase.firestore.firestore
 fun Initiator(
     context: Context,
     googleSignInClient: GoogleSignInClient,
-    navController: NavController
+    navController: NavController,
+    viewModel: UserViewModel
 ) {
+
     var signInError by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
@@ -51,9 +58,17 @@ fun Initiator(
 
                 db.collection("users").document(userId).get()
                     .addOnSuccessListener { document ->
+                        val newUser= User(
+                            account.id.toString(),
+                            account.displayName.toString(),
+                            account.familyName.toString(), account.photoUrl?.toString(),account.email,0,"","")
+                            viewModel.insertUser(newUser)
+                        Log.d("RoomDBBBBBBBBBBBBBBBBB",newUser.firstName)
+                        Toast.makeText(context,newUser.firstName, Toast.LENGTH_SHORT).show()
                         if (document.exists()) {
                             isLoading = false
                             navController.navigate("home_screen")
+
                         } else {
                             isLoading = false
                             navController.navigate("new_user")
@@ -153,4 +168,12 @@ private fun handleSignInResult(
         Log.e("GoogleSignIn", "Sign-in failed: ${e.statusCode}")
         onError(e)
     }
+}
+fun isFirstBoot(context: Context): Boolean {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+    return sharedPreferences.getBoolean("isFirstBoot", true)
+}
+fun setFirstBootDone(context: Context) {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+    sharedPreferences.edit().putBoolean("isFirstBoot", false).apply()
 }

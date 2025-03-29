@@ -1,12 +1,11 @@
-package com.example.locationapp
+package com.example.beatsfit.util
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Looper
 import androidx.core.content.ContextCompat
-import com.example.beatsfit.LocationViewModel
-import com.example.beatsfit.util.LocationData
+import com.example.beatsfit.viewmodel.LocationViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest

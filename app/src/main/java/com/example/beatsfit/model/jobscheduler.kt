@@ -1,11 +1,11 @@
-//import android.annotation.SuppressLint
+package com.example.beatsfit.model//import android.annotation.SuppressLint
 //import android.app.job.JobParameters
 //import android.app.job.JobService
 //import android.content.Context
 //import android.util.Log
-//import com.example.beatsfit.BeatsfitViewModel
-//import com.example.locationapp.LocationUtils
-//import com.example.beatsfit.LocationViewModel
+//import com.example.beatsfit.viewmodel.BeatsfitViewModel
+//import com.example.beatsfit.util.LocationUtils
+//import com.example.beatsfit.viewmodel.LocationViewModel
 //import com.google.android.gms.auth.api.signin.GoogleSignIn
 //import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 //import com.google.android.gms.fitness.Fitness

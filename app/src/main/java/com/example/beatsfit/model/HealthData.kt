@@ -1,4 +1,4 @@
-package com.example.beatsfit
+package com.example.beatsfit.model
 
 data class HealthData(
     val steps: Float,

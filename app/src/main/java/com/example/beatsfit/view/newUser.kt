@@ -1,4 +1,4 @@
-package com.example.beatsfit
+package com.example.beatsfit.view
 
 import android.content.Context
 import android.util.Log
@@ -14,6 +14,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.beatsfit.viewmodel.UserViewModel
+import com.example.beatsfit.room.data.User
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -22,11 +24,11 @@ import com.google.firebase.ktx.Firebase
 fun NewUser(
     context: Context,
     account: GoogleSignInAccount,
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: UserViewModel
 ) {
     var isDataSaved by remember { mutableStateOf(false) }
     var mobileNumber by remember { mutableStateOf("") }
-
 
     if (!isDataSaved) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -66,6 +68,13 @@ fun NewUser(
                             if (!isDataSaved) {
                                 Toast.makeText(context, "User data saved successfully!", Toast.LENGTH_SHORT).show()
                                 isDataSaved = true
+                                val newUser= User(
+                                    account.id.toString(),
+                                    account.displayName.toString(),
+                                    account.familyName.toString(), account.photoUrl?.toString(),account.email,0,"","")
+                                viewModel.insertUser(newUser)
+                                Log.d("RoomDBBBBBBBBBBBBBBBBB",newUser.firstName)
+                                Toast.makeText(context,newUser.firstName,Toast.LENGTH_SHORT).show()
                                 navController.navigate("home_screen") {
                                     popUpTo("sign_in") { inclusive = true }
                                     launchSingleTop = true
