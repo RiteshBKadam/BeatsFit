@@ -1,12 +1,9 @@
 package com.example.beatsfit.view
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -17,15 +14,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.beatsfit.R
-import com.example.beatsfit.util.Screens
-import kotlin.coroutines.coroutineContext
 
 @Composable
 fun BottomAppBarWithIcons(navController: NavController) {
    BottomAppBar(
         containerColor = Color(0xFF122931),
         contentColor = Color.White,
-        modifier = Modifier.height(60.dp),
+        modifier = Modifier.height(64.dp),
         actions = {
             IconButton(
                 onClick = {
@@ -68,6 +63,27 @@ fun BottomAppBarWithIcons(navController: NavController) {
                     modifier = Modifier.size(26.dp)
                 )
             }
+            IconButton(
+                onClick = {
+                    val currentRoute =
+                        navController.currentBackStackEntry?.destination?.route
+                    // Navigate only if the current route is not already "profile_screen"
+                    if (currentRoute != "trackFamily") {
+                        navController.navigate("trackFamily"){
+                            popUpTo("initiator")
+                        }
+                    }
+                },
+                modifier = Modifier.weight(0.26f)
+
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = "MonitorFamily",
+                    tint= Color.White,
+                    modifier = Modifier.size(25.dp)
+                )
+            }
 
             IconButton(
                 onClick = {
@@ -84,12 +100,13 @@ fun BottomAppBarWithIcons(navController: NavController) {
                 modifier = Modifier.weight(0.26f)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Person,
+                    painter = painterResource(R.drawable.group_family),
                     contentDescription = "Profile",
                     tint = Color.White,
                     modifier = Modifier.size(25.dp)
                 )
             }
+
 
             IconButton(
                 onClick = {

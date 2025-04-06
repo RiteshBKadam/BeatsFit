@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.beatsfit.R
+import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +44,12 @@ data class Contact(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Members(account: GoogleSignInAccount, navController: NavController, context: Context) {
+fun Members(
+    account: GoogleSignInAccount,
+    navController: NavController,
+    context: Context,
+    userViewModel: UserViewModel
+) {
 
 
     val savedContacts by produceState<List<Contact>?>( // Make nullable
@@ -52,7 +59,6 @@ fun Members(account: GoogleSignInAccount, navController: NavController, context:
         value = fetchSavedContacts(account) // Load contacts
     }
 
-    // Navigation Side Effect:  Use LaunchedEffect with savedContacts and a condition
     LaunchedEffect(savedContacts) {
         if (savedContacts != null && savedContacts!!.isEmpty()) { // Check for loaded *and* empty
             delay(1200)
@@ -61,14 +67,30 @@ fun Members(account: GoogleSignInAccount, navController: NavController, context:
             }
         }
     }
-    Toast.makeText(context, navController.previousBackStackEntry?.destination?.route ?: "",Toast.LENGTH_LONG).show()
     Scaffold(
         topBar = {
-            TopAppBar(navController) // Pass in the navController to TopAppBar
+            TopAppBar(navController,userViewModel,context)
+
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("friends") }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 18.dp, start = 30.dp), // Adjust bottom padding if needed,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                FloatingActionButton(
+                    containerColor = Color(0xFF2196F3),
+                    shape = CircleShape,
+                    onClick = {
+                        navController.navigate("friends") },
+                ) {
+                    if (savedContacts.isNullOrEmpty()) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add Contact")
+                    } else {
+                        Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Contacts")
+                    }
+                }
             }
         },
         bottomBar = { BottomAppBarWithIcons(navController = navController) }
@@ -82,8 +104,6 @@ fun Members(account: GoogleSignInAccount, navController: NavController, context:
             when (savedContacts) {
                 null -> LoadingScreen()  // Display loading while savedContacts is null
                 else -> if (savedContacts!!.isEmpty()) {
-                    // Handle the empty case directly in the UI.  No need for EmptyContactScreen
-                    // as the navigation is handled by the LaunchedEffect.  Just display a message.
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -113,6 +133,8 @@ fun ContactListScreen(savedContacts: List<Contact>, context: Context) {
             .padding(top = 15.dp)
     ) {
         Column {
+
+
             val contactList = savedContacts.take(4) // Handle up to 4 contacts dynamically
             val chunkedContacts = contactList.chunked(2) // Split into rows of 2
 
@@ -127,16 +149,16 @@ fun ContactListScreen(savedContacts: List<Contact>, context: Context) {
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        Row {
+        Row (Modifier.padding(10.dp)
+            .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween){
             SOSButton(
                 text = "SOS Message",
                 onClick = { /* Handle message action */ },
-                modifier = Modifier.weight(1f)
             )
             SOSButton(
                 text = "SOS Call",
                 onClick = { /* Handle call action */ },
-                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -152,7 +174,7 @@ fun SOSButton(
         onClick = onClick,
         modifier = modifier
             .height(58.dp)
-            .width(197.dp)
+            .width(150.dp)
             .padding(3.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
@@ -176,7 +198,7 @@ fun SavedContactCard(
     contact: Contact,
     context: Context,
 ) {
-    val firstLetter = contact.name.firstOrNull()?.toUpperCase().toString()
+    val firstLetter = contact.name.firstOrNull()?.uppercase().toString()
 
     Card(
         modifier = Modifier
@@ -197,11 +219,12 @@ fun SavedContactCard(
             verticalArrangement = Arrangement.spacedBy(15.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Box(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFDBB3FF))
+                    .background(Color(0xFF8EC7C2))
                     .align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center
             ) {

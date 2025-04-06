@@ -44,7 +44,7 @@ fun UserProfileScreen(
     userViewModel: UserViewModel
 ) {
     val user by userViewModel.user.observeAsState()
-    val userName= user?.firstName
+    val userName= user?.firstName+" "+user?.lastName
     val userEmail= user?.email
     val userProfilePicture= user?.imageUri.toString()
 

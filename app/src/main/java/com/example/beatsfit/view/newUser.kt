@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.example.beatsfit.room.data.User
+import com.example.beatsfit.util.formatPhoneNumber
+import com.example.beatsfit.util.saveLoginDetails
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -55,10 +57,10 @@ fun NewUser(
                     val db = Firebase.firestore
                     val user = hashMapOf(
                         "id" to (account.id ?: "Unknown ID"),
-                        "name" to (account.givenName ?: "Unknown Name"),
+                        "first_name" to (account.givenName ?: "Unknown Name"),
                         "last_name" to (account.familyName ?: "Unknown Last Name"),
                         "email" to (account.email ?: "Unknown Email"),
-                        "mobile_number" to mobileNumber 
+                        "mobile_number" to formatPhoneNumber(mobileNumber)
                     )
 
                     db.collection("users")
@@ -70,11 +72,10 @@ fun NewUser(
                                 isDataSaved = true
                                 val newUser= User(
                                     account.id.toString(),
-                                    account.displayName.toString(),
+                                    account.givenName.toString(),
                                     account.familyName.toString(), account.photoUrl?.toString(),account.email,0,"","")
                                 viewModel.insertUser(newUser)
-                                Log.d("RoomDBBBBBBBBBBBBBBBBB",newUser.firstName)
-                                Toast.makeText(context,newUser.firstName,Toast.LENGTH_SHORT).show()
+                                saveLoginDetails(context,account,true)
                                 navController.navigate("home_screen") {
                                     popUpTo("sign_in") { inclusive = true }
                                     launchSingleTop = true

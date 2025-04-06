@@ -43,15 +43,12 @@ android {
 }
 
 dependencies {
-
-
     implementation (libs.play.services.fitness)
     implementation (libs.lottie.compose)
     implementation (libs.firebase.ui.auth)
     implementation(platform(libs.firebase.bom))
     implementation(libs.google.firebase.auth)
     implementation(libs.androidx.core.ktx)
-    implementation (libs.maps.sdk)
     implementation (libs.accompanist.systemuicontroller)
     implementation (libs.androidx.work.runtime.ktx)
     implementation(libs.okhttp)
@@ -61,15 +58,10 @@ dependencies {
     implementation(libs.play.services.fido)
     kapt (libs.androidx.room.compiler)
     implementation (libs.androidx.room.runtime)
-    implementation("io.coil-kt:coil-compose:2.5.0")
-
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
-    // Jetpack Compose (if not already added)
-    implementation ("androidx.compose.runtime:runtime-livedata:1.7.8")
-
-
-
+    implementation(libs.coil.compose)
+    implementation (libs.androidx.lifecycle.viewmodel.ktx)
+    implementation (libs.androidx.lifecycle.livedata.ktx)
+    implementation (libs.androidx.runtime.livedata)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -89,10 +81,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
-
-
-
-
 }

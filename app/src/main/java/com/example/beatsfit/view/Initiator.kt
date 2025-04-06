@@ -24,6 +24,8 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.beatsfit.R
 import com.example.beatsfit.room.data.User
+import com.example.beatsfit.util.isUserLoggedIn
+import com.example.beatsfit.util.saveLoginDetails
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -33,7 +35,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
 fun Initiator(
     context: Context,
@@ -41,7 +43,6 @@ fun Initiator(
     navController: NavController,
     viewModel: UserViewModel
 ) {
-
     var signInError by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
@@ -53,18 +54,22 @@ fun Initiator(
             onSuccess = { account ->
                 val db = Firebase.firestore
                 val userId = account.id ?: "Unknown ID"
-
                 isLoading = true
-
                 db.collection("users").document(userId).get()
                     .addOnSuccessListener { document ->
                         val newUser= User(
-                            account.id.toString(),
-                            account.displayName.toString(),
-                            account.familyName.toString(), account.photoUrl?.toString(),account.email,0,"","")
-                            viewModel.insertUser(newUser)
-                        Log.d("RoomDBBBBBBBBBBBBBBBBB",newUser.firstName)
-                        Toast.makeText(context,newUser.firstName, Toast.LENGTH_SHORT).show()
+                            id = account.id.toString(),
+                            firstName = account.givenName.toString(),
+                            lastName = account.familyName.toString(),
+                            imageUri = account.photoUrl?.toString(),
+                            email = account.email,
+                            height = 0,
+                            weight = "",
+                            gender = ""
+                        )
+                        viewModel.insertUser(newUser)
+                        saveLoginDetails(context,account,true)
+
                         if (document.exists()) {
                             isLoading = false
                             navController.navigate("home_screen")

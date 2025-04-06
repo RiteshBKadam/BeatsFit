@@ -39,9 +39,9 @@ fun FriendsScreen(navController: NavController, account: GoogleSignInAccount) {
                     Manifest.permission.READ_CONTACTS
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                    permissionGranted=true
-                }
-             else {
+                permissionGranted=true
+            }
+            else {
                 permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
             }
 
@@ -68,11 +68,11 @@ fun FriendsScreen(navController: NavController, account: GoogleSignInAccount) {
             Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) },
                 modifier = Modifier.wrapContentSize(),
                 colors = ButtonColors(
-                containerColor = Color(0xFF99cccc),
-                contentColor = Color.Black,
-                disabledContainerColor = Color.LightGray,
-                disabledContentColor = Color.White
-            )
+                    containerColor = Color(0xFF99cccc),
+                    contentColor = Color.Black,
+                    disabledContainerColor = Color.LightGray,
+                    disabledContentColor = Color.White
+                )
 
             ) {
                 Text("Permission to read contacts is required.")
@@ -80,4 +80,3 @@ fun FriendsScreen(navController: NavController, account: GoogleSignInAccount) {
         }
     }
 }
-

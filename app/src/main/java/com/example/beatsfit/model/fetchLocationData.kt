@@ -20,8 +20,7 @@ import androidx.navigation.NavHostController
 import com.example.beatsfit.view.MainActivity
 import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.util.LocationUtils
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
+
 
 @Composable
 fun LocationTrackerScreen(
@@ -30,8 +29,6 @@ fun LocationTrackerScreen(
     viewModel: LocationViewModel,
     navController: NavHostController
 ) {
-    var mapView by remember { mutableStateOf<MapView?>(null) }
-    val currentMarker = remember { mutableStateOf<Marker?>(null) }
     val location = viewModel.location.value
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),

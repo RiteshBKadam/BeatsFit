@@ -1,6 +1,7 @@
 package com.example.beatsfit.view
 
 import android.widget.Toast
+import androidx.collection.mutableFloatFloatMapOf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,7 +58,7 @@ fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) 
     var weightValue by remember { mutableStateOf("${user?.weight}"?:"0.0") }
     var ageValue by remember { mutableStateOf("0") }
     var selectedGender by remember { mutableStateOf("${user?.gender}") }
-    var heightValue by remember { mutableStateOf(user?.height) }
+    var heightValue by remember { mutableFloatStateOf(user?.height?.toFloat()?: 0.0f) }
     var showWeightDialog by remember { mutableStateOf(false) }
     var showAgeDialog by remember { mutableStateOf(false) }
 
@@ -178,7 +180,7 @@ fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) 
                 )
 
                 Text(
-                    text = heightValue.toString() + "cm",
+                    text = heightValue.toInt().toString() + "cm",
                     color = Color.White,
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Bold,
@@ -193,7 +195,7 @@ fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) 
                         Slider(
                             value = it1,
                             onValueChange = { newValue ->
-                                heightValue = newValue.toInt()
+                                heightValue = newValue
                             },
                             valueRange = 0f..340f,
                             steps = 0,

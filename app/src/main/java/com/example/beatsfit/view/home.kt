@@ -45,6 +45,7 @@ import com.example.beatsfit.model.HealthData
 import com.example.beatsfit.util.LocationUtils
 import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.R
+import com.example.beatsfit.util.isUserLoggedIn
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -55,7 +56,11 @@ import com.google.android.gms.fitness.data.DataType
 private const val REQUEST_OAUTH_REQUEST_CODE=1
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun FitnessScreen(navController: NavController, context: Context, account: GoogleSignInAccount,beatsfitViewModel: BeatsfitViewModel) {
+fun FitnessScreen(navController: NavController,
+                  context: Context,
+                  account: GoogleSignInAccount,
+                  beatsfitViewModel: BeatsfitViewModel,
+                  userViewModel: UserViewModel) {
     val fitnessOptions = buildFitnessOptions()
 
     var isPermissionGranted by remember { mutableStateOf(false) }
@@ -111,10 +116,13 @@ fun FitnessScreen(navController: NavController, context: Context, account: Googl
 
 
     if (isPermissionGranted) {
-
+        LaunchedEffect(Unit) {
+            if (!isUserLoggedIn(context)) {
+                navController.navigate("initiator")
+            }
+        }
         homeScreen(
-            context, account, navController,  beatsfitViewModel,
-
+            context, account, navController,  beatsfitViewModel,userViewModel
         )
 
     } else {
@@ -136,7 +144,11 @@ fun FitnessScreen(navController: NavController, context: Context, account: Googl
 }
 
 @Composable
-fun homeScreen(context: Context,account: GoogleSignInAccount,navController:NavController, beatsfitViewModel: BeatsfitViewModel) {
+fun homeScreen(context: Context,
+               account: GoogleSignInAccount,
+               navController:NavController,
+               beatsfitViewModel: BeatsfitViewModel,
+               userViewModel: UserViewModel) {
 
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -185,7 +197,7 @@ fun homeScreen(context: Context,account: GoogleSignInAccount,navController:NavCo
         Scaffold(
             modifier = Modifier.background(Color(0xFF0f191f)),
             topBar = {
-                TopAppBar(navController)
+                TopAppBar(navController, userViewModel,context)
             },
             bottomBar = { BottomAppBarWithIcons(navController) },
             floatingActionButton = {
@@ -217,7 +229,6 @@ fun homeScreen(context: Context,account: GoogleSignInAccount,navController:NavCo
                             contentDescription = "Edit"
                         )
                     }
-                    Toast.makeText(context, account.photoUrl?.path ?: "nll", Toast.LENGTH_SHORT).show()
 
                     FloatingActionButton(
                         onClick = { isExpanded = !isExpanded },
@@ -522,7 +533,6 @@ fun StatItem(
 fun logout(navController: NavController, context: Context,userViewModel: UserViewModel) {
     val googleSignInClient =
         GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN)
-    googleSignInClient.revokeAccess()
     userViewModel.clearDatabase()
     googleSignInClient.signOut()
         .addOnCompleteListener {
@@ -544,4 +554,5 @@ fun buildFitnessOptions(): FitnessOptions {
         .addDataType(DataType.TYPE_WORKOUT_EXERCISE, FitnessOptions.ACCESS_READ)
         .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
         .build()
+
 }

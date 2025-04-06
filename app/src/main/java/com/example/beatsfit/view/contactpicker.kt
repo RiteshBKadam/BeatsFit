@@ -3,6 +3,7 @@ import android.content.Context
 import android.database.Cursor
 import android.provider.ContactsContract
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
+import com.example.beatsfit.util.formatPhoneNumber
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
@@ -89,7 +92,6 @@ fun ContactPickerScreen(
                                 "phoneNumber" to formatPhoneNumber(contact.phoneNumber)
                             )
                         }
-
                         if (userId != null) {
                             firestore.collection("users")
                                 .document(userId)
@@ -100,7 +102,28 @@ fun ContactPickerScreen(
                                 .addOnFailureListener { e ->
                                     Log.e("ContactPicker", "Error saving contacts: ${e.message}")
                                 }
+                            for (contact in contactsData) {
+                                firestore.collection("users").whereEqualTo("mobile_number", contact.get("phoneNumber"))
+                                    .get()
+                                    .addOnSuccessListener {
+                                        if(!it.isEmpty){
+                                            val doc=it.documents[0]
+                                            val thisDocId=doc.id
+                                            firestore.collection("users").document(thisDocId)
+                                                .update("addedBy", FieldValue.arrayUnion(userId))
+                                                .addOnSuccessListener {
+                                                    Log.d("Firebaseeeeeee", "Contacts saved successfully!")
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    Log.e("ContactPicker", "Error saving contacts: ${e.message}")
+                                                }
+                                        }
+                                    }
+                            }
+
                         }
+
+
                     }
                     navController.navigate("members")
 
@@ -245,15 +268,4 @@ suspend fun fetchAllContacts(context: Context): List<Contact> {
 
         contactList
     }
-}
-fun formatPhoneNumber(phoneNumber: String): String {
-
-    val cleanedNumber = phoneNumber.replace(Regex("[^\\d]"), "")
-    val formattedNumber:String
-    formattedNumber = if(cleanedNumber.startsWith("91")){
-            "+$cleanedNumber"
-        }else{
-            "+91$cleanedNumber"
-        }
-    return formattedNumber
 }

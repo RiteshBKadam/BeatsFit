@@ -72,7 +72,7 @@ fun AppNavGraph(
     val googleSignInClient = createGoogleSignInClient(context)
     val account = GoogleSignIn.getLastSignedInAccount(context)
 
-    NavHost(navController, startDestination = "initiator") {
+    NavHost(navController, startDestination = "home_screen") {
 
         composable("initiator") {
             Initiator(
@@ -89,7 +89,8 @@ fun AppNavGraph(
                     context = context,
                     account = it,
                     navController = navController,
-                    beatsfitViewModel = beatsfitViewModel
+                    beatsfitViewModel = beatsfitViewModel,
+                    userViewModel = userViewModel
                 )
             }
         }
@@ -142,7 +143,7 @@ fun AppNavGraph(
 
         composable("members") {
             account?.let {
-                Members(account = it, navController = navController, context = context)
+                Members(account = it, navController = navController, context = context,userViewModel)
             }
         }
 
@@ -154,6 +155,12 @@ fun AppNavGraph(
         composable("healthAndFitness") {
             account?.let {
                 HealthAndFitness(navController,userViewModel)
+            }
+        }
+        composable("trackFamily") {
+            account?.let {
+                val id=account.id
+                TrackFamily(navController,userViewModel,context,id)
             }
         }
     }
