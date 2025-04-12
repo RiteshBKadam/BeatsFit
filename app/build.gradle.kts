@@ -43,6 +43,9 @@ android {
 }
 
 dependencies {
+
+    implementation (libs.osmdroid.android)
+
     implementation (libs.play.services.fitness)
     implementation (libs.lottie.compose)
     implementation (libs.firebase.ui.auth)

@@ -56,22 +56,34 @@ fun TopAppBar(navController: NavController,userViewModel: UserViewModel,context:
     var alpha by remember { mutableFloatStateOf(0.0F) }
 
     LaunchedEffect(currentRoute) {
-        when (currentRoute) {
-            "home_screen" -> {
-                if (greetString() != "Warm Late Night") {
-                    title = "Good ${greetString()}"
-                    alpha = 1.0F
-                } else {
-                    title = ""
-                    alpha = 0.0F
-                }
+        when {
+            currentRoute?.contains("home_screen") == true -> {
+                title = "Good ${greetString()}!"
+                alpha = 1.0f
             }
-            "members" -> { title = "Members"; alpha = 0.0F }
-            "health" -> { title = "Health Details"; alpha = 0.0F }
-            "user_profile" -> { title = "Profile"; alpha = 0.0F }
-            "trackFamily"-> {title="Family's Health";alpha = 0.0F }
+            currentRoute == "members" -> {
+                title = "Members"
+                alpha = 0.0f
+            }
+            currentRoute == "health" -> {
+                title = "Health Details"
+                alpha = 0.0f
+            }
+            currentRoute == "user_profile" -> {
+                title = "Profile"
+                alpha = 0.0f
+            }
+            currentRoute == "trackFamily" -> {
+                title = "Family's Health"
+                alpha = 0.0f
+            }
+            else -> {
+                title = ""
+                alpha = 0.0f
+            }
         }
     }
+
 
     Column {
         androidx.compose.material3.TopAppBar(

@@ -2,26 +2,21 @@ package com.example.beatsfit.view
 
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -32,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +46,6 @@ import androidx.navigation.NavHostController
 import com.example.beatsfit.R
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.delay
 
 @Composable
 fun TrackFamily(
@@ -62,7 +54,7 @@ fun TrackFamily(
     context: Context,
     id: String?
 ) {
-    val addedByIds = remember { mutableStateListOf<String>() }
+    val friendsIds = remember { mutableStateListOf<String>() }
     val firestore = FirebaseFirestore.getInstance()
 
     LaunchedEffect(id) {
@@ -72,8 +64,8 @@ fun TrackFamily(
                 if (doc.exists()) {
                     val list = doc.get("addedBy") as? List<String>
                     if (list != null) {
-                        addedByIds.clear()
-                        addedByIds.addAll(list)
+                        friendsIds.clear()
+                        friendsIds.addAll(list)
                     }
                 }
             }
@@ -89,8 +81,8 @@ fun TrackFamily(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             Column {
-                addedByIds.forEach { addedById ->
-                    FamilyContactCard(context, addedById, firestore )
+                friendsIds.forEach { friendsId ->
+                    FamilyContactCard(context, friendsId, firestore,navController )
                 }
             }
         }
@@ -100,14 +92,15 @@ fun TrackFamily(
 @Composable
 fun FamilyContactCard(
     context: Context,
-    addedById: String,
-    firestore: FirebaseFirestore
+    friendsId: String,
+    firestore: FirebaseFirestore,
+    navController: NavHostController
 ) {
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    LaunchedEffect(addedById) {
-        firestore.collection("users").document(addedById)
+    LaunchedEffect(friendsId) {
+        firestore.collection("users").document(friendsId)
             .get()
             .addOnSuccessListener { doc ->
                 val _firstName = doc.get("first_name") ?: ""
@@ -205,7 +198,7 @@ fun FamilyContactCard(
                     }
 
                     IconButton(
-                        onClick = { },
+                        onClick = { navController.navigate("location_screen/$friendsId")},
                         colors = IconButtonColors(
                             containerColor = Color(0xFF2196F3),
                             contentColor = Color.White,
@@ -222,10 +215,7 @@ fun FamilyContactCard(
                     }
                     IconButton(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_DIAL).apply {
-                                data = Uri.parse("tel:${phoneNumber}")
-                            }
-                            context.startActivity(intent)
+
                         },
                         colors = IconButtonColors(
                             containerColor = Color(0xFF2196F3),
@@ -241,7 +231,7 @@ fun FamilyContactCard(
                         )
                     }
                 }
-                Button(onClick ={}) {
+                Button(onClick ={navController.navigate("monitor_details/$friendsId")}) {
                     Text("Monitor Details")
                 }
             }

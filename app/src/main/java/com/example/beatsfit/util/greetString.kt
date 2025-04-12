@@ -9,7 +9,6 @@ fun greetString(): String {
     return when (hour) {
         in 6..11 -> "Morning"
         in 12..16 -> "Afternoon"
-        in 17..21 -> "Evening"
-        else -> "Warm Late Night"
+        else ->"Evening"
     }
 }

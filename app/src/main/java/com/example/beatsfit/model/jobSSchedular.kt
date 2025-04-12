@@ -30,14 +30,17 @@ class SyncJobService : JobService() {
         val context = applicationContext
 
         FirebaseApp.initializeApp(context)
+         val account = GoogleSignIn.getLastSignedInAccount(context)
 
-        val userId = "user1"
+
+
+        val userId = account?.id.toString()
         val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
         val formattedDateTime = dateFormat.format(calendar.time)
 
 
-        val account = GoogleSignIn.getLastSignedInAccount(context)
+
 
         if (account != null) {
             // Initialize ViewModel and fetch health data

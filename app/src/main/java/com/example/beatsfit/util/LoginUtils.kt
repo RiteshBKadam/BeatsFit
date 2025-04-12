@@ -2,22 +2,18 @@ package com.example.beatsfit.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
+import androidx.navigation.NavController
+import com.example.beatsfit.viewmodel.UserViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 
-fun checkDoc(account: GoogleSignInAccount, onResult: (Boolean) -> Unit) {
-    val db = Firebase.firestore
-    val userId = account.id ?: "Unknown ID"
 
-    db.collection("users").document(userId).get()
-        .addOnSuccessListener { document ->
-            onResult(document.exists()) // Return true if the document exists
-        }
-        .addOnFailureListener {
-            onResult(false) // Return false in case of an error
-        }
-}
 
 
 fun saveLoginDetails(context: Context, username: GoogleSignInAccount, password: Boolean) {
@@ -34,4 +30,38 @@ fun isUserLoggedIn(context: Context): Boolean {
     val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
     return sharedPreferences.getBoolean("IS_LOGGED_IN", false)
+}
+
+fun logout(navController: NavController, context: Context, userViewModel: UserViewModel) {
+    val googleSignInClient =
+        GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN)
+    userViewModel.clearDatabase()
+    val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+    editor.putBoolean("IS_LOGGED_IN",false)
+    googleSignInClient.signOut()
+        .addOnCompleteListener {
+
+            navController.navigate("initiator") {
+                popUpTo("home_screen") { inclusive = true }
+            }
+        }
+}
+
+fun handleSignInResult(
+    task: Task<GoogleSignInAccount>,
+    context: Context,
+    onSuccess: (GoogleSignInAccount) -> Unit,
+    onError: (Exception) -> Unit
+) {
+    try {
+        val account = task.getResult(ApiException::class.java)
+        if (account != null) {
+            onSuccess(account)
+        }
+    } catch (e: ApiException) {
+        Log.e("GoogleSignIn", "Sign-in failed: ${e.statusCode}")
+        onError(e)
+    }
 }

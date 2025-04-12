@@ -72,7 +72,8 @@ fun Initiator(
 
                         if (document.exists()) {
                             isLoading = false
-                            navController.navigate("home_screen")
+                            val isPermissionGranted=true
+                            navController.navigate("home_screen/$isPermissionGranted")
 
                         } else {
                             isLoading = false
@@ -90,6 +91,7 @@ fun Initiator(
             }
         )
     }
+
     Scaffold(
         content = {
             Box(
@@ -173,12 +175,4 @@ private fun handleSignInResult(
         Log.e("GoogleSignIn", "Sign-in failed: ${e.statusCode}")
         onError(e)
     }
-}
-fun isFirstBoot(context: Context): Boolean {
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-    return sharedPreferences.getBoolean("isFirstBoot", true)
-}
-fun setFirstBootDone(context: Context) {
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-    sharedPreferences.edit().putBoolean("isFirstBoot", false).apply()
 }

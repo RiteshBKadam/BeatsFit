@@ -36,6 +36,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.beatsfit.R
+import com.example.beatsfit.util.logout
 import com.example.beatsfit.viewmodel.UserViewModel
 @Composable
 fun UserProfileScreen(
@@ -173,7 +174,7 @@ fun UserProfileScreen(
                     ProfileOption(icon = Icons.Default.Info, text = "Health and Fitness", onClick = {navController.navigate("healthAndFitness")})
                     ProfileOption(
                         icon = Icons.Default.Share, text = "Emergency & Sharing",
-                        onClick = {/*TODO()*/}
+                        onClick = {}
                     )
                     ProfileOption(
                         icon = Icons.Default.Favorite, text = "Other Information",

@@ -10,10 +10,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.beatsfit.model.LocationTrackerScreen
+import androidx.navigation.navArgument
 import com.example.beatsfit.room.data.UserRepository
 import com.example.beatsfit.ui.theme.BeatsFitTheme
 import com.example.beatsfit.viewmodel.BeatsfitViewModel
@@ -26,10 +27,13 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import org.osmdroid.config.Configuration
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Configuration.getInstance().load(applicationContext, getSharedPreferences("osmdroid", MODE_PRIVATE))
+
         setContent {
             BeatsFitTheme {
                 val systemUiController = rememberSystemUiController()
@@ -72,7 +76,7 @@ fun AppNavGraph(
     val googleSignInClient = createGoogleSignInClient(context)
     val account = GoogleSignIn.getLastSignedInAccount(context)
 
-    NavHost(navController, startDestination = "home_screen") {
+    NavHost(navController, startDestination = "permission") {
 
         composable("initiator") {
             Initiator(
@@ -83,15 +87,34 @@ fun AppNavGraph(
             )
         }
 
-        composable("home_screen") {
-            account?.let {
-                FitnessScreen(
+        composable("permission") {
+            if (account != null) {
+                PermissionScreen(
                     context = context,
-                    account = it,
-                    navController = navController,
-                    beatsfitViewModel = beatsfitViewModel,
-                    userViewModel = userViewModel
+                    account = account,
+                    navController= navController,
                 )
+            }
+        }
+
+        composable(
+            route = "home_screen/{isPermissionGranted}",
+            arguments = listOf(navArgument("isPermissionGranted") {
+                type = NavType.BoolType
+            })
+        ) { backStackEntry ->
+            val isPermissionGranted = backStackEntry.arguments?.getBoolean("isPermissionGranted")
+            account?.let {
+                if (isPermissionGranted != null) {
+                    FitnessScreen(
+                        context = context,
+                        account = it,
+                        navController = navController,
+                        beatsfitViewModel = beatsfitViewModel,
+                        userViewModel = userViewModel,
+                        isPermissionGranted = isPermissionGranted
+                    )
+                }
             }
         }
 
@@ -99,20 +122,20 @@ fun AppNavGraph(
             account?.let {
                 NewUser(
                     context = context,
-                    account = it,
                     navController = navController,
-                    userViewModel
+                    userViewModel,
+                    googleSignInClient
                 )
             }
         }
 
-        composable("location") {
-            LocationTrackerScreen(
-                context = context,
-                navController = navController,
-                locationUtils = locationUtils,
-                viewModel = locationViewModel
-            )
+        composable("location_screen/{friendsId}") {backStackEntry->
+            val friendsId = backStackEntry.arguments?.getString("friendsId")
+            if (friendsId != null) {
+                MapsScreen(
+                    context = context,friendsId
+                )
+            }
         }
 
         composable("friends") {
@@ -163,6 +186,17 @@ fun AppNavGraph(
                 TrackFamily(navController,userViewModel,context,id)
             }
         }
+        composable("monitor_details/{friendsId}") {backStackEntry->
+            val friendsId = backStackEntry.arguments?.getString("friendsId")
+            if (friendsId != null) {
+                MonitorDetailsScreen(
+                    context = context,
+                    friendsId=friendsId,
+                    navController=navController
+                )
+            }
+        }
+
     }
 }
 

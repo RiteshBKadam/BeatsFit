@@ -1,5 +1,6 @@
 package com.example.beatsfit.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -26,8 +27,14 @@ fun BottomAppBarWithIcons(navController: NavController) {
                 onClick = {
                     val currentRoute =
                         navController.currentBackStackEntry?.destination?.route
-                    if (currentRoute != "home_screen") {
-                        navController.navigate("home_screen"){
+                    Log.d("ASFGEFAGERGERTG",currentRoute.toString())
+                    if (currentRoute?.contains("home_screen") == false) {
+                        val isPermissionGranted=true
+                        val route = "home_screen/$isPermissionGranted"
+                        Log.d("NavDebug", "Navigating to: $route")
+
+
+                        navController.navigate("home_screen/$isPermissionGranted"){
                             popUpTo("initiator")
                         }
                     }
@@ -47,7 +54,6 @@ fun BottomAppBarWithIcons(navController: NavController) {
                     // Get the current route
                     val currentRoute =
                         navController.currentBackStackEntry?.destination?.route
-                    // Navigate only if the current route is not already "health"
                     if (currentRoute != "health") {
                         navController.navigate("health"){
                             popUpTo("initiator")
@@ -67,7 +73,6 @@ fun BottomAppBarWithIcons(navController: NavController) {
                 onClick = {
                     val currentRoute =
                         navController.currentBackStackEntry?.destination?.route
-                    // Navigate only if the current route is not already "profile_screen"
                     if (currentRoute != "trackFamily") {
                         navController.navigate("trackFamily"){
                             popUpTo("initiator")

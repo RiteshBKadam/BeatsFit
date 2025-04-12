@@ -1,9 +1,9 @@
 package com.example.beatsfit.view
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -47,6 +47,7 @@ import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.R
 import com.example.beatsfit.util.isUserLoggedIn
 import com.example.beatsfit.viewmodel.UserViewModel
+import com.firebase.ui.auth.data.remote.GoogleSignInHandler
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -54,78 +55,34 @@ import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 
 private const val REQUEST_OAUTH_REQUEST_CODE=1
+var fitnessOptions: FitnessOptions? =null
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun FitnessScreen(navController: NavController,
                   context: Context,
                   account: GoogleSignInAccount,
                   beatsfitViewModel: BeatsfitViewModel,
-                  userViewModel: UserViewModel) {
-    val fitnessOptions = buildFitnessOptions()
+                  userViewModel: UserViewModel,
+                  isPermissionGranted:Boolean) {
 
-    var isPermissionGranted by remember { mutableStateOf(false) }
-    if (GoogleSignIn.hasPermissions(account, fitnessOptions)) {
-        // Check if permissions are already granted
-        val activityRecognitionPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACTIVITY_RECOGNITION
-        )
-        val fineLocationPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-        val loca = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-        val bat = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-        val bg = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-        if (activityRecognitionPermission != PackageManager.PERMISSION_GRANTED ||
-            fineLocationPermission != PackageManager.PERMISSION_GRANTED ||
-            loca!=PackageManager.PERMISSION_GRANTED||
-            bat!=PackageManager.PERMISSION_GRANTED||
-            bg!=PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                context as Activity,
-                arrayOf(
-                    Manifest.permission.ACTIVITY_RECOGNITION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ),
-                REQUEST_OAUTH_REQUEST_CODE
-            )
-        } else {
-            isPermissionGranted = true
-        }
-    } else {
-        GoogleSignIn.requestPermissions(
-            context as Activity,
-            REQUEST_OAUTH_REQUEST_CODE,
-            account,
-            fitnessOptions
-        )
-    }
-
-
-    if (isPermissionGranted) {
-        LaunchedEffect(Unit) {
-            if (!isUserLoggedIn(context)) {
-                navController.navigate("initiator")
+    LaunchedEffect(Unit) {
+        fitnessOptions = buildFitnessOptions()
+        fitnessOptions?.let {
+            if (!GoogleSignIn.hasPermissions(account, it)) {
+                GoogleSignIn.requestPermissions(
+                    context as Activity,
+                    REQUEST_OAUTH_REQUEST_CODE,
+                    account, it
+                )
             }
         }
+    }
+
+    if (isPermissionGranted) {
         homeScreen(
             context, account, navController,  beatsfitViewModel,userViewModel
         )
-
-    } else {
+     } else {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -202,7 +159,6 @@ fun homeScreen(context: Context,
             bottomBar = { BottomAppBarWithIcons(navController) },
             floatingActionButton = {
                 Box {
-
                     FloatingActionButton(
                         onClick = { isExpanded = !isExpanded },
                         containerColor = Color(0xFFFF0000),
@@ -530,18 +486,6 @@ fun StatItem(
         )
     }
 }
-fun logout(navController: NavController, context: Context,userViewModel: UserViewModel) {
-    val googleSignInClient =
-        GoogleSignIn.getClient(context, GoogleSignInOptions.DEFAULT_SIGN_IN)
-    userViewModel.clearDatabase()
-    googleSignInClient.signOut()
-        .addOnCompleteListener {
-
-            navController.navigate("initiator") {
-                popUpTo("home_screen") { inclusive = true }
-            }
-        }
-}
 
 fun buildFitnessOptions(): FitnessOptions {
     return FitnessOptions.builder()
@@ -556,3 +500,4 @@ fun buildFitnessOptions(): FitnessOptions {
         .build()
 
 }
+
