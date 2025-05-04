@@ -82,17 +82,17 @@ fun HealthDetailScreen(
 
                     HealthMetricCard("Steps", "${healthData.steps.toInt()} steps", R.drawable.steps, navController)
                     HealthMetricCard("Heart Rate", "${healthData.heartRate} bpm", R.drawable.heartbeat, navController)
-                    HealthMetricCard("Calories Burned", "${healthData.calories} kcal", R.drawable.steps, navController)
+                    HealthMetricCard("Calories Burned", "${healthData.calories} kcal", R.drawable.vitals, navController)
                     HealthMetricCard(
                         "Distance",
-                        "${String.format("%.2f", healthData.distance)} km",
-                        R.drawable.steps,
+                        "${String.format("%.2f", healthData.distance/1000)} km",
+                        R.drawable.km,
                         navController
                     )
                     HealthMetricCard(
                         "Location",
                         "${healthData.latitude} \n ${healthData.longitude}",
-                        R.drawable.steps,
+                        R.drawable.location_vector,
                         navController
                     )
 
@@ -116,7 +116,7 @@ fun HealthMetricCard(title: String, value: String, iconRes: Int, navController: 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate("graphDetail") }
+//            .clickable { navController.navigate("graphDetail") }
             .height(80.dp),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0x1BFFFFFF))

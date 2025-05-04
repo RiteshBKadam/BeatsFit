@@ -3,7 +3,6 @@ import android.content.Context
 import android.database.Cursor
 import android.provider.ContactsContract
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -53,7 +52,6 @@ fun ContactPickerScreen(
     val coroutineScope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
 
-    // Load contacts asynchronously
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val fetchedContacts = fetchAllContacts(context)

@@ -46,6 +46,8 @@ fun Initiator(
     var signInError by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
+
+
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         handleSignInResult(

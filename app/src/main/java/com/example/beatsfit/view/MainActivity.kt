@@ -3,9 +3,12 @@ package com.example.beatsfit.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,10 +26,12 @@ import com.example.beatsfit.util.LocationUtils
 import com.example.beatsfit.util.UserViewModelFactory
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.example.beatsfit.room.data.UserDatabase
+import com.example.beatsfit.model.LocationService
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.firestore.FirebaseFirestore
 import org.osmdroid.config.Configuration
 
 class MainActivity : ComponentActivity() {
@@ -50,6 +55,8 @@ class MainActivity : ComponentActivity() {
                 val userViewModel: UserViewModel = viewModel(
                     factory = UserViewModelFactory(UserRepository(UserDatabase.getInstance(context).userDao()))
                 )
+
+                LocationService.startService(context)
                 AppNavGraph(
                     context = context,
                     navController = navController,
@@ -74,7 +81,10 @@ fun AppNavGraph(
     locationUtils: LocationUtils
 ) {
     val googleSignInClient = createGoogleSignInClient(context)
+
     val account = GoogleSignIn.getLastSignedInAccount(context)
+
+    val firestore=FirebaseFirestore.getInstance()
 
     NavHost(navController, startDestination = "permission") {
 
@@ -88,14 +98,12 @@ fun AppNavGraph(
         }
 
         composable("permission") {
-            if (account != null) {
                 PermissionScreen(
                     context = context,
-                    account = account,
                     navController= navController,
                 )
-            }
         }
+
 
         composable(
             route = "home_screen/{isPermissionGranted}",
@@ -104,7 +112,9 @@ fun AppNavGraph(
             })
         ) { backStackEntry ->
             val isPermissionGranted = backStackEntry.arguments?.getBoolean("isPermissionGranted")
-            account?.let {
+            Toast.makeText(context,"main", Toast.LENGTH_LONG).show()
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+            account?.let{
                 if (isPermissionGranted != null) {
                     FitnessScreen(
                         context = context,
@@ -172,7 +182,7 @@ fun AppNavGraph(
 
         composable("user_profile") {
             account?.let {
-                UserProfileScreen(navController, context,userViewModel)
+                UserProfileScreen(navController, context,it,userViewModel)
             }
         }
         composable("healthAndFitness") {
@@ -196,9 +206,27 @@ fun AppNavGraph(
                 )
             }
         }
+        composable("emergency") {
+            if (account != null) {
+                EmergencyAndSharing(
+                    context = context,
+                    navController = navController,
+                    account = account,
+                    firestore = firestore
+                )
+            }
+        }
+        composable("appPreferences") {
+                AppPreferences(
+                    context = context,
+                    navController = navController
+                )
+            }
 
     }
+
 }
+
 
 
 fun createGoogleSignInClient(context: Context): GoogleSignInClient {

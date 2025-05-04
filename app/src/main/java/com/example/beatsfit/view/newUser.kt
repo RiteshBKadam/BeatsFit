@@ -25,6 +25,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
+import kotlinx.coroutines.launch
 
 @Composable
 fun NewUser(
@@ -38,7 +39,8 @@ fun NewUser(
     var showMobileInput by remember { mutableStateOf(false) }
     var currentAccount by remember { mutableStateOf<com.google.android.gms.auth.api.signin.GoogleSignInAccount?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-
+    var contacts by remember { mutableStateOf<List<Contact>>(emptyList()) }
+    val coroutineScope = rememberCoroutineScope()
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -49,7 +51,9 @@ fun NewUser(
                     currentAccount = account
                     val db = Firebase.firestore
                     val userId = account.id ?: "Unknown ID"
-
+                    coroutineScope.launch {
+                        contacts= fetchSavedContacts(account)
+                    }
                     db.collection("users").document(userId).get()
                         .addOnSuccessListener { document ->
                             val newUser = User(
@@ -60,8 +64,7 @@ fun NewUser(
                                 email = account.email,
                                 height = 0,
                                 weight = "",
-                                gender = ""
-                            )
+                                gender = "" )
 
                             viewModel.insertUser(newUser)
                             saveLoginDetails(context, account, true)

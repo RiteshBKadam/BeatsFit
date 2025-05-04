@@ -1,12 +1,12 @@
 package com.example.beatsfit.room.data
 
+
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "user-table")
 data class User(
-
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: String,

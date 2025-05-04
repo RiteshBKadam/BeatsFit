@@ -8,6 +8,7 @@ import android.util.Log
 import com.example.beatsfit.viewmodel.BeatsfitViewModel
 import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.util.LocationUtils
+import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.FirebaseApp
@@ -96,7 +97,7 @@ class SyncJobService : JobService() {
                             userId = userId,
                             formattedDateTime = formattedDateTime,
                             steps = healthData.steps,
-                            distance = healthData.distance,
+                            distance =String.format("%.2f", healthData.distance/1000).toFloat(),
                             heartRate = healthData.heartRate,
                             calories = healthData.calories,
                             latitude = healthData.latitude,

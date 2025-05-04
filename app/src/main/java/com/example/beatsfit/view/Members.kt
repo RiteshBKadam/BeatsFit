@@ -51,22 +51,22 @@ fun Members(
     userViewModel: UserViewModel
 ) {
 
-
-    val savedContacts by produceState<List<Contact>?>( // Make nullable
+    val _savedContacts by produceState<List<Contact>?>( // Make nullable
         initialValue = null, // Initial value is null (loading state)
         key1 = account.id // Use account.id as key
     ) {
-        value = fetchSavedContacts(account) // Load contacts
+        value = fetchSavedContacts(account)
     }
 
-    LaunchedEffect(savedContacts) {
-        if (savedContacts != null && savedContacts!!.isEmpty()) { // Check for loaded *and* empty
+    LaunchedEffect(_savedContacts) {
+        if (_savedContacts != null && _savedContacts!!.isEmpty()) { // Check for loaded *and* empty
             delay(1200)
             navController.navigate("friends") {
                 popUpTo("members") { inclusive = true }
             }
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(navController,userViewModel,context)
@@ -85,7 +85,7 @@ fun Members(
                     onClick = {
                         navController.navigate("friends") },
                 ) {
-                    if (savedContacts.isNullOrEmpty()) {
+                    if (_savedContacts.isNullOrEmpty()) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = "Add Contact")
                     } else {
                         Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Contacts")
@@ -101,9 +101,9 @@ fun Members(
                 .padding(padding)
                 .background(Color(0xFF0f191f))
         ) {
-            when (savedContacts) {
-                null -> LoadingScreen()  // Display loading while savedContacts is null
-                else -> if (savedContacts!!.isEmpty()) {
+            when (_savedContacts) {
+                null -> LoadingScreen()  // Display loading while _savedContacts is null
+                else -> if (_savedContacts!!.isEmpty()) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -117,7 +117,7 @@ fun Members(
                         )
                     }
                 } else {
-                    ContactListScreen(savedContacts!!, context)
+                    ContactListScreen(_savedContacts!!, context)
                 }
             }
         }
@@ -125,17 +125,16 @@ fun Members(
 }
 
 @Composable
-fun ContactListScreen(savedContacts: List<Contact>, context: Context) {
+fun ContactListScreen(_savedContacts: List<Contact>, context: Context) {
     Column(
         modifier = Modifier
             .background(Color(0xFF0f191f))
             .fillMaxSize()
             .padding(top = 15.dp)
     ) {
-        Column {
-
-
-            val contactList = savedContacts.take(4) // Handle up to 4 contacts dynamically
+        Column( modifier = Modifier
+            .weight(1f)){
+            val contactList = _savedContacts.take(4) // Handle up to 4 contacts dynamically
             val chunkedContacts = contactList.chunked(2) // Split into rows of 2
 
             chunkedContacts.forEach { rowContacts ->
@@ -149,7 +148,7 @@ fun ContactListScreen(savedContacts: List<Contact>, context: Context) {
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        Row (Modifier.padding(10.dp)
+        Row(Modifier.padding(10.dp)
             .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween){
             SOSButton(
@@ -281,7 +280,7 @@ fun SavedContactCard(
 
 suspend fun fetchSavedContacts(account: GoogleSignInAccount): List<Contact> {
     return withContext(Dispatchers.IO) {
-        val savedContacts = mutableListOf<Contact>()
+        val _savedContacts = mutableListOf<Contact>()
         val firestore = FirebaseFirestore.getInstance()
         val userId = account.id
 
@@ -296,14 +295,14 @@ suspend fun fetchSavedContacts(account: GoogleSignInAccount): List<Contact> {
                 contactsData?.forEach { contactData ->
                     val name = contactData["name"] ?: "Unknown"
                     val phoneNumber = contactData["phoneNumber"] ?: "Unknown"
-                    savedContacts.add(Contact(name, phoneNumber))
+                    _savedContacts.add(Contact(name, phoneNumber))
+
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-
-        savedContacts
+        _savedContacts
     }
 }
 

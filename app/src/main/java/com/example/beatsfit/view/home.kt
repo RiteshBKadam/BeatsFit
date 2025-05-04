@@ -1,16 +1,18 @@
 package com.example.beatsfit.view
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.SharedPreferences
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -45,12 +47,9 @@ import com.example.beatsfit.model.HealthData
 import com.example.beatsfit.util.LocationUtils
 import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.R
-import com.example.beatsfit.util.isUserLoggedIn
 import com.example.beatsfit.viewmodel.UserViewModel
-import com.firebase.ui.auth.data.remote.GoogleSignInHandler
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 
@@ -64,6 +63,7 @@ fun FitnessScreen(navController: NavController,
                   beatsfitViewModel: BeatsfitViewModel,
                   userViewModel: UserViewModel,
                   isPermissionGranted:Boolean) {
+    
 
     LaunchedEffect(Unit) {
         fitnessOptions = buildFitnessOptions()
@@ -77,6 +77,7 @@ fun FitnessScreen(navController: NavController,
             }
         }
     }
+    Toast.makeText(context,isPermissionGranted.toString(),Toast.LENGTH_LONG).show()
 
     if (isPermissionGranted) {
         homeScreen(
@@ -117,7 +118,6 @@ fun homeScreen(context: Context,
     val locationViewModel: LocationViewModel = viewModel()
 
     val scrollState = rememberScrollState()
-
     val healthData by beatsfitViewModel.healthData.collectAsState()
 
 
@@ -142,12 +142,15 @@ fun homeScreen(context: Context,
         animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing), label = ""
     )
 
-    LaunchedEffect(Unit) {
+    var contacts=remember {  mutableStateListOf<Contact>()}
+    LaunchedEffect(account) {
         beatsfitViewModel.startFetchingHealthData(
             context, account,
             locationUtils,
             locationViewModel
         )
+        val result = fetchSavedContacts(account)
+        contacts.addAll(result)
     }
 
 
@@ -159,8 +162,17 @@ fun homeScreen(context: Context,
             bottomBar = { BottomAppBarWithIcons(navController) },
             floatingActionButton = {
                 Box {
+
                     FloatingActionButton(
-                        onClick = { isExpanded = !isExpanded },
+                        onClick = { isExpanded = !isExpanded
+                            Log.d("BeatsFit", "Fetched contacts: $contacts")
+
+                            if (contacts.size > 1) {
+                                            makeCall(context, contacts[0].phoneNumber.toString())
+                                        } else {
+                                            Toast.makeText(context, "Not enough contacts to make a call", Toast.LENGTH_SHORT).show()
+                                        }
+                                  },
                         containerColor = Color(0xFFFF0000),
                         shape = CircleShape,
                         modifier = Modifier
@@ -172,8 +184,17 @@ fun homeScreen(context: Context,
                             contentDescription = "Share"
                         )
                     }
+
                     FloatingActionButton(
-                        onClick = { isExpanded = !isExpanded },
+                        onClick = { isExpanded = !isExpanded
+                            fitnessOptions?.let {
+                                GoogleSignIn.requestPermissions(
+                                    context as Activity,
+                                    REQUEST_OAUTH_REQUEST_CODE,
+                                    account, it
+                                )
+                            }
+                        },
                         containerColor = Color(0xFFFF0000),
                         shape = CircleShape,
                         modifier = Modifier
@@ -210,6 +231,27 @@ fun homeScreen(context: Context,
             }
         )
 }
+
+fun makeCall(context: Context, no: String) {
+
+
+        val callIntent = Intent(Intent.ACTION_CALL)
+        callIntent.data = Uri.parse("tel:$no")
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CALL_PHONE
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            context.startActivity(callIntent)
+        } else {
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                arrayOf(Manifest.permission.CALL_PHONE),
+                1
+            )
+        }
+}
+
 @Composable
 fun FitnessContent(healthData: HealthData, alphaVal:Float) {
     var searchText by remember { mutableStateOf("") }
@@ -305,7 +347,7 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float) {
                 icon = Icons.Default.Person
             )
             StatItem(
-                value = healthData.distance.toString(),
+                value = "${String.format("%.2f", healthData.distance/1000)} km",
                 unit = "km",
                 color = Color(0xFF51CF66),
                 icon = Icons.Default.LocationOn

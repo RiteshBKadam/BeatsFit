@@ -44,8 +44,11 @@ android {
 
 dependencies {
 
-    implementation (libs.osmdroid.android)
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
 
+    implementation (libs.osmdroid.android)
+    implementation (libs.gson)
     implementation (libs.play.services.fitness)
     implementation (libs.lottie.compose)
     implementation (libs.firebase.ui.auth)

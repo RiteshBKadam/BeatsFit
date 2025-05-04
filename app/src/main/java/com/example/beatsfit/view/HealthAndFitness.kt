@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -53,7 +54,7 @@ import com.example.beatsfit.viewmodel.UserViewModel
 @Composable
 fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) {
     val user by userViewModel.user.observeAsState()
-    val backgroundColor = Color(0xFF13232F) // Dark theme background
+    val backgroundColor = Color(0xFF0C161C)
     val textColor = Color.White
     var weightValue by remember { mutableStateOf("${user?.weight}"?:"0.0") }
     var ageValue by remember { mutableStateOf("0") }
@@ -71,7 +72,7 @@ fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) 
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
-            .padding(16.dp)
+            .padding(10.dp)
     ) {
 
         Row(
@@ -79,17 +80,18 @@ fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) 
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = textColor
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "",
+                    modifier = Modifier.size(35.dp),
+                    tint = Color.White
                 )
             }
+
             Text(
                 text = "Health and Fitness",
-                fontSize = 20.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor,
-                modifier = Modifier.padding(start = 8.dp)
             )
         }
 
@@ -142,7 +144,7 @@ fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) 
                 Column(horizontalAlignment = Alignment.CenterHorizontally){
                     Column(
                         Modifier
-                            .background(Color(0xBF13232F))
+                            .background(Color(0xFF0C161C))
                             .clip(CircleShape)
                             .size(130.dp)
                             .border(2.dp, Color.White, CircleShape)

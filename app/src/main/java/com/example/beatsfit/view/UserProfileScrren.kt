@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ExitToApp
@@ -21,9 +22,13 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -32,23 +37,32 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.substring
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.beatsfit.R
 import com.example.beatsfit.util.logout
 import com.example.beatsfit.viewmodel.UserViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+
 @Composable
 fun UserProfileScreen(
     navController: NavHostController,
     context: Context,
+    account:GoogleSignInAccount,
     userViewModel: UserViewModel
 ) {
     val user by userViewModel.user.observeAsState()
     val userName= user?.firstName+" "+user?.lastName
     val userEmail= user?.email
     val userProfilePicture= user?.imageUri.toString()
-
+    val lastSyncTime=LastSyncTime(account)
     Scaffold(bottomBar = { BottomAppBarWithIcons(navController) }
 
     ) {
@@ -65,7 +79,7 @@ fun UserProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                         contentDescription = "Back",
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
@@ -101,20 +115,7 @@ fun UserProfileScreen(
                             modifier = Modifier
                                 .size(100.dp)
                                 .clip(CircleShape)
-                                .background(
-//                                    Brush.linearGradient(
-//                                        listOf(
-//                                            Color(0XFFB1A2CA),
-//                                            Color(0xFF1889D5),
-//                                            Color(0xFF688CB4)
-//                                        ),
-//                                        start = Offset.Zero,
-//                                        end = Offset.Infinite,
-//                                        tileMode = TileMode.Clamp
-
-//                                    )
-                                Color(0xFF114011)
-                                )// Background color for fallback
+                                .background(Color(0xFF114011))// Background color for fallback
                                 .border(2.dp, Color.White, CircleShape) ,
                             contentAlignment = Alignment.Center// Optional border
                         ) {
@@ -171,19 +172,44 @@ fun UserProfileScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 Column(modifier = Modifier
                     .fillMaxWidth()) {
-                    ProfileOption(icon = Icons.Default.Info, text = "Health and Fitness", onClick = {navController.navigate("healthAndFitness")})
+                    ProfileOption(icon = Icons.Default.Favorite, text = "Health and Fitness", onClick = {navController.navigate("healthAndFitness")})
                     ProfileOption(
                         icon = Icons.Default.Share, text = "Emergency & Sharing",
-                        onClick = {}
-                    )
-                    ProfileOption(
-                        icon = Icons.Default.Favorite, text = "Other Information",
-                        onClick = {/*TODO()*/}
+                        onClick = {navController.navigate("emergency")}
                     )
                     ProfileOption(
                         icon = Icons.Default.Settings, text = "App Preferences",
-                        onClick = {/*TODO()*/}
+                        onClick = {navController.navigate("appPreferences")}
                     )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "lastSync",
+                            tint = Color.White,
+                            modifier = Modifier.size(29.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Last Sync",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = lastSyncTime,
+                            fontSize = 18.sp,
+                            color = Color.White,
+                        )
+
+                    }
                     ProfileOption(
                         icon = Icons.Default.ExitToApp,
                         text = "Log out",
@@ -192,9 +218,40 @@ fun UserProfileScreen(
                         onClick = { logout(navController,context,userViewModel) }
                     )
                 }
+
             }
         }
     }
+}
+
+@Composable
+fun LastSyncTime(account: GoogleSignInAccount): String {
+    val coroutineScope = rememberCoroutineScope()
+    var lastSyncTime by remember { mutableStateOf("Fetching...") }
+    val firestore = FirebaseFirestore.getInstance()
+    LaunchedEffect(account.id) {
+        try {
+            val snapshot = firestore.collection("healthData")
+                .document(account.id.toString())
+                .collection("latitude")
+                .get()
+                .await()
+
+            if (!snapshot.isEmpty) {
+                val lastDoc = snapshot.documents.last()
+                val timeStamp = lastDoc.get("timestamp")?.toString()
+                val hh=timeStamp.toString().substringAfter(delimiter = "_").substring(0,2)
+                val mm=timeStamp.toString().substringAfter(delimiter = "_").substring(2,4)
+                lastSyncTime = "$hh:$mm"
+
+            } else {
+                lastSyncTime = "No data"
+            }
+        } catch (e: Exception) {
+            lastSyncTime = "Error: ${e.message}"
+        }
+    }
+    return lastSyncTime
 }
 
 @Composable

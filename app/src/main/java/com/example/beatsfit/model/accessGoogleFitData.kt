@@ -43,7 +43,6 @@ suspend fun fetchFitnessData(
     }
 }
 
-// Fetch heart rate data
 suspend fun fetchHeartRate(
     context: Context,
     account: GoogleSignInAccount
@@ -69,7 +68,6 @@ suspend fun fetchHeartRate(
     }
 }
 
-// Fetch location data
 suspend fun fetchLocationData(
     viewModel: LocationViewModel,
     locationUtils: LocationUtils
