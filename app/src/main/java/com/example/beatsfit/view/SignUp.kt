@@ -5,15 +5,21 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.example.beatsfit.room.data.User
@@ -26,14 +32,23 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 import kotlinx.coroutines.launch
+import com.example.beatsfit.R
+
 
 @Composable
-fun NewUser(
+fun SignUp(
     context: Context,
     navController: NavHostController,
     viewModel: UserViewModel,
     googleSignInClient: GoogleSignInClient
 ) {
+    val mistrully = FontFamily(
+        Font(R.font.mistrully, FontWeight.Normal),
+    )
+    val quicksand= FontFamily(
+        Font(R.font.quicksand, FontWeight.Normal)
+    )
+
     var isDataSaved by remember { mutableStateOf(false) }
     var mobileNumber by remember { mutableStateOf("") }
     var showMobileInput by remember { mutableStateOf(false) }
@@ -64,7 +79,9 @@ fun NewUser(
                                 email = account.email,
                                 height = 0,
                                 weight = "",
-                                gender = "" )
+                                gender = "",
+                                stepGoal =0,
+                                cyclingGoal = 0)
 
                             viewModel.insertUser(newUser)
                             saveLoginDetails(context, account, true)
@@ -94,7 +111,7 @@ fun NewUser(
                 onError = { error ->
                     isLoading = false
                     Toast.makeText(context, "Sign-in failed: ${error.message}", Toast.LENGTH_LONG).show()
-                    Log.e("NewUser", "Sign-in error", error)
+                    Log.e("SignUp", "Sign-in error", error)
                 }
             )
         }
@@ -111,8 +128,16 @@ fun NewUser(
     } else if (showMobileInput && currentAccount != null) {
         Column(modifier = Modifier
             .padding(16.dp)
-            .fillMaxWidth()) {
+            .fillMaxWidth()
+            .background(Color(0xFF0f191f)),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
 
+            Row(){
+                Text("Beats", fontFamily = quicksand, fontSize = 30.sp, color = Color.White)
+                Text("Fit", fontFamily = mistrully, fontSize = 30.sp, color = Color.White)
+
+            }
             TextField(
                 value = mobileNumber,
                 onValueChange = { newValue ->
@@ -169,7 +194,7 @@ fun NewUser(
                                     "Failed to save user data: ${e.message}",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                Log.e("NewUser", "Save error", e)
+                                Log.e("SignUp", "Save error", e)
                             }
                     } else {
                         Toast.makeText(

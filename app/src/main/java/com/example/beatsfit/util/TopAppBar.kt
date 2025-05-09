@@ -1,8 +1,9 @@
-package com.example.beatsfit.view
+package com.example.beatsfit.util
 
 import android.content.Context
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +18,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
@@ -42,7 +43,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.beatsfit.R
 import com.example.beatsfit.room.data.User
-import com.example.beatsfit.util.greetString
 import com.example.beatsfit.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,8 +86,8 @@ fun TopAppBar(navController: NavController,userViewModel: UserViewModel,context:
 
 
     Column {
-        androidx.compose.material3.TopAppBar(
-            title = { user?.let { AppBarTitle(title, alpha, it,context) } }, // Extracted to avoid recomposition
+        TopAppBar(
+            title = { user?.let { AppBarTitle(title, alpha, it,context,navController) } }, // Extracted to avoid recomposition
             modifier = Modifier.height(75.dp),
             colors = TopAppBarDefaults.smallTopAppBarColors(
                 containerColor = Color(0xFF0f191f)
@@ -97,12 +97,17 @@ fun TopAppBar(navController: NavController,userViewModel: UserViewModel,context:
 }
 
 @Composable
-fun AppBarTitle(title: String, alpha: Float, user: User, context: Context) {
+fun AppBarTitle(
+    title: String,
+    alpha: Float,
+    user: User,
+    context: Context,
+    navController: NavController,) {
     val userProfilePicture=user.imageUri.toString()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 15.dp, end = 15.dp),
+            .padding(top = 15.dp, end = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -116,12 +121,15 @@ fun AppBarTitle(title: String, alpha: Float, user: User, context: Context) {
             user.firstName?.let { AnimatedAlphaText(alpha, it, context) }
         }
 
-        Row(Modifier.padding(end = 3.dp, bottom = 5.dp)) {
+        Row(Modifier.padding(end = 3.dp, bottom = 1.dp)) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.LightGray)
+                    .background(Color(0xFF114011))
+                    .clickable(onClick = {navController.navigate("user_profile")}),
+                contentAlignment = Alignment.Center
+
             ){
 
                 if(userProfilePicture!="null") {
@@ -134,6 +142,11 @@ fun AppBarTitle(title: String, alpha: Float, user: User, context: Context) {
                         placeholder = painterResource(R.drawable.profile_placeholder),
                         modifier = Modifier.fillMaxSize()
                     )
+                }
+                else{
+                    if (!user.firstName.isNullOrEmpty()) {
+                        Text(user.firstName.trim().take(1).uppercase(), fontSize = 25.sp)
+                    }
                 }
 
             }

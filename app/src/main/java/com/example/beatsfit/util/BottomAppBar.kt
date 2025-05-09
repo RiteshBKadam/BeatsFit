@@ -1,4 +1,4 @@
-package com.example.beatsfit.view
+package com.example.beatsfit.util
 
 import android.util.Log
 import androidx.compose.foundation.layout.height
@@ -35,7 +35,7 @@ fun BottomAppBarWithIcons(navController: NavController) {
 
 
                         navController.navigate("home_screen/$isPermissionGranted"){
-                            popUpTo("initiator")
+                            popUpTo("home_screen/true")
                         }
                     }
                 },
@@ -56,7 +56,7 @@ fun BottomAppBarWithIcons(navController: NavController) {
                         navController.currentBackStackEntry?.destination?.route
                     if (currentRoute != "health") {
                         navController.navigate("health"){
-                            popUpTo("initiator")
+                            popUpTo("home_screen/true")
                         }
                     }
                 },
@@ -75,7 +75,7 @@ fun BottomAppBarWithIcons(navController: NavController) {
                         navController.currentBackStackEntry?.destination?.route
                     if (currentRoute != "trackFamily") {
                         navController.navigate("trackFamily"){
-                            popUpTo("initiator")
+                            popUpTo("home_screen/true")
                         }
                     }
                 },
@@ -98,7 +98,7 @@ fun BottomAppBarWithIcons(navController: NavController) {
                     // Navigate only if the current route is not already "profile_screen"
                     if (currentRoute != "friends") {
                         navController.navigate("members"){
-                            popUpTo("initiator")
+                            popUpTo("home_screen/true")
                         }
                     }
                 },
@@ -121,7 +121,7 @@ fun BottomAppBarWithIcons(navController: NavController) {
                     // Navigate only if the current route is not already "settings_screen"
                     if (currentRoute != "user_profile") {
                         navController.navigate("user_profile"){
-                            popUpTo("initiator")
+                            popUpTo("home_screen/true")
                         }
                     }
                 },

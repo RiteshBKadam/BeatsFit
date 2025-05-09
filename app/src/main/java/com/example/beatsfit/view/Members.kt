@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.beatsfit.R
+import com.example.beatsfit.util.BottomAppBarWithIcons
+import com.example.beatsfit.util.LocationData
+import com.example.beatsfit.util.TopAppBar
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.firestore.FirebaseFirestore
@@ -69,7 +71,7 @@ fun Members(
 
     Scaffold(
         topBar = {
-            TopAppBar(navController,userViewModel,context)
+            TopAppBar(navController, userViewModel, context)
 
         },
         floatingActionButton = {
@@ -117,7 +119,7 @@ fun Members(
                         )
                     }
                 } else {
-                    ContactListScreen(_savedContacts!!, context)
+                    ContactListScreen(_savedContacts!!, context,navController)
                 }
             }
         }
@@ -125,7 +127,7 @@ fun Members(
 }
 
 @Composable
-fun ContactListScreen(_savedContacts: List<Contact>, context: Context) {
+fun ContactListScreen(_savedContacts: List<Contact>, context: Context,navController: NavController) {
     Column(
         modifier = Modifier
             .background(Color(0xFF0f191f))
@@ -134,13 +136,13 @@ fun ContactListScreen(_savedContacts: List<Contact>, context: Context) {
     ) {
         Column( modifier = Modifier
             .weight(1f)){
-            val contactList = _savedContacts.take(4) // Handle up to 4 contacts dynamically
-            val chunkedContacts = contactList.chunked(2) // Split into rows of 2
+            val contactList = _savedContacts.take(4)
+            val chunkedContacts = contactList.chunked(2)
 
             chunkedContacts.forEach { rowContacts ->
                 Row {
                     rowContacts.forEach { contact ->
-                        SavedContactCard(contact, context)
+                        SavedContactCard(contact, context, navController )
                     }
                 }
             }
@@ -196,8 +198,14 @@ fun SOSButton(
 fun SavedContactCard(
     contact: Contact,
     context: Context,
+    navController: NavController
 ) {
+    var showLiveMap by remember { mutableStateOf(false) }
+
+    val liveLocation= LocationData(latitude = 0.0, longitude = 0.0)
+
     val firstLetter = contact.name.firstOrNull()?.uppercase().toString()
+
 
     Card(
         modifier = Modifier
@@ -269,14 +277,14 @@ fun SavedContactCard(
                     contentDescription = "Message Icon",
                     modifier = Modifier
                         .size(28.dp)
-                        .clickable {
-
-                        }
+                        .clickable(onClick = {navController.navigate("liveMap/${contact.phoneNumber}/${contact.name}") })
                 )
             }
         }
     }
+
 }
+
 
 suspend fun fetchSavedContacts(account: GoogleSignInAccount): List<Contact> {
     return withContext(Dispatchers.IO) {

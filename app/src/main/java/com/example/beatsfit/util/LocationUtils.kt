@@ -56,7 +56,7 @@ class LocationUtils(val context: Context) {
                         )
 
                         com.google.firebase.Firebase.firestore
-                            .collection("user_locations")
+                            .collection("userLiveLocation")
                             .document(userId)
                             .set(locationMap)
                     }

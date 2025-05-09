@@ -67,7 +67,9 @@ fun Initiator(
                             email = account.email,
                             height = 0,
                             weight = "",
-                            gender = ""
+                            gender = "",
+                            stepGoal =0,
+                            cyclingGoal = 0
                         )
                         viewModel.insertUser(newUser)
                         saveLoginDetails(context,account,true)

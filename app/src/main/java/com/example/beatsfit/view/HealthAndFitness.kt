@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -62,10 +63,13 @@ fun HealthAndFitness(navController: NavController,userViewModel: UserViewModel) 
     var heightValue by remember { mutableFloatStateOf(user?.height?.toFloat()?: 0.0f) }
     var showWeightDialog by remember { mutableStateOf(false) }
     var showAgeDialog by remember { mutableStateOf(false) }
+    var stepGoal by remember { mutableIntStateOf(user?.stepGoal ?: 0) }
+    var cyclingGoal by remember { mutableStateOf(user?.cyclingGoal?:0) }
+
 
     val newUser= user?.let { heightValue?.let { it1 ->
         User(it.id,it.firstName,it.lastName,it.imageUri,it.email,
-            it1.toInt() ,weightValue, selectedGender)
+            it1.toInt() ,weightValue, selectedGender, stepGoal,cyclingGoal)
     } }
 
     Column(

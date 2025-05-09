@@ -2,7 +2,6 @@ package com.example.beatsfit.view
 
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,8 +14,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
@@ -31,25 +29,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.substring
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.beatsfit.R
+import com.example.beatsfit.util.BottomAppBarWithIcons
 import com.example.beatsfit.util.logout
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 @Composable
 fun UserProfileScreen(
@@ -174,9 +165,14 @@ fun UserProfileScreen(
                     .fillMaxWidth()) {
                     ProfileOption(icon = Icons.Default.Favorite, text = "Health and Fitness", onClick = {navController.navigate("healthAndFitness")})
                     ProfileOption(
+                        icon = Icons.AutoMirrored.Outlined.List, text = "Diet & Goals",
+                        onClick = {navController.navigate("dietAndGoals")}
+                    )
+                    ProfileOption(
                         icon = Icons.Default.Share, text = "Emergency & Sharing",
                         onClick = {navController.navigate("emergency")}
                     )
+
                     ProfileOption(
                         icon = Icons.Default.Settings, text = "App Preferences",
                         onClick = {navController.navigate("appPreferences")}

@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.beatsfit.R
+import com.example.beatsfit.util.BottomAppBarWithIcons
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

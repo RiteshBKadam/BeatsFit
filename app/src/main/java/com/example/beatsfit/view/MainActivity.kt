@@ -8,7 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +29,7 @@ import com.example.beatsfit.util.UserViewModelFactory
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.example.beatsfit.room.data.UserDatabase
 import com.example.beatsfit.model.LocationService
+import com.example.beatsfit.util.isUserLoggedIn
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -86,7 +89,14 @@ fun AppNavGraph(
 
     val firestore=FirebaseFirestore.getInstance()
 
-    NavHost(navController, startDestination = "permission") {
+    var startDestination by remember{ mutableStateOf("") }
+
+    if(!isUserLoggedIn(context)){
+        startDestination="initiator"
+    }else{
+        startDestination="home_screen/true"
+    }
+    NavHost(navController, startDestination = startDestination) {
 
         composable("initiator") {
             Initiator(
@@ -96,14 +106,6 @@ fun AppNavGraph(
                 viewModel = userViewModel
             )
         }
-
-        composable("permission") {
-                PermissionScreen(
-                    context = context,
-                    navController= navController,
-                )
-        }
-
 
         composable(
             route = "home_screen/{isPermissionGranted}",
@@ -129,8 +131,9 @@ fun AppNavGraph(
         }
 
         composable("new_user") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
             account?.let {
-                NewUser(
+                SignUp(
                     context = context,
                     navController = navController,
                     userViewModel,
@@ -206,6 +209,15 @@ fun AppNavGraph(
                 )
             }
         }
+        composable("dietAndGoals") {
+            if (account != null) {
+                DietAndGoals(
+                    context = context,
+                    navController = navController,
+                    userViewModel = userViewModel
+                )
+            }
+        }
         composable("emergency") {
             if (account != null) {
                 EmergencyAndSharing(
@@ -222,6 +234,19 @@ fun AppNavGraph(
                     navController = navController
                 )
             }
+
+        composable(
+            route = "liveMap/{phone}/{name}",
+            arguments = listOf(
+                navArgument("phone") { type = NavType.StringType },
+                navArgument("name") { type = NavType.StringType }
+            )
+        ){backStackEntry ->
+            val phone = backStackEntry.arguments?.getString("phone").toString()
+            val name = backStackEntry.arguments?.getString("name").toString()
+            LiveLocationMap(Contact(name,phone),navController)
+        }
+
 
     }
 

@@ -30,5 +30,12 @@ data class User(
     val weight: String?,
 
     @ColumnInfo(name = "gender")
-    val gender: String?
-)
+    val gender: String?,
+
+    @ColumnInfo(name = "stepGoal")
+    val stepGoal: Int?,
+
+    @ColumnInfo(name = "cyclingGoal")
+    val cyclingGoal: Int?
+
+    )

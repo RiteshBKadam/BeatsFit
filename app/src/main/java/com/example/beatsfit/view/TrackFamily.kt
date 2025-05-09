@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.beatsfit.R
+import com.example.beatsfit.util.BottomAppBarWithIcons
+import com.example.beatsfit.util.TopAppBar
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 

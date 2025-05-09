@@ -9,10 +9,19 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -47,11 +57,15 @@ import com.example.beatsfit.model.HealthData
 import com.example.beatsfit.util.LocationUtils
 import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.R
+import com.example.beatsfit.room.data.User
+import com.example.beatsfit.util.BottomAppBarWithIcons
+import com.example.beatsfit.util.TopAppBar
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
+import kotlinx.coroutines.delay
 
 private const val REQUEST_OAUTH_REQUEST_CODE=1
 var fitnessOptions: FitnessOptions? =null
@@ -63,7 +77,23 @@ fun FitnessScreen(navController: NavController,
                   beatsfitViewModel: BeatsfitViewModel,
                   userViewModel: UserViewModel,
                   isPermissionGranted:Boolean) {
-    
+
+
+
+    val permissions = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACTIVITY_RECOGNITION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+    )
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+
+    }
+    val allPermissionsGranted = permissions.all {
+        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
 
     LaunchedEffect(Unit) {
         fitnessOptions = buildFitnessOptions()
@@ -75,6 +105,9 @@ fun FitnessScreen(navController: NavController,
                     account, it
                 )
             }
+           if(!allPermissionsGranted){
+               launcher.launch(permissions)
+           }
         }
     }
     Toast.makeText(context,isPermissionGranted.toString(),Toast.LENGTH_LONG).show()
@@ -157,7 +190,7 @@ fun homeScreen(context: Context,
         Scaffold(
             modifier = Modifier.background(Color(0xFF0f191f)),
             topBar = {
-                TopAppBar(navController, userViewModel,context)
+                TopAppBar(navController, userViewModel, context)
             },
             bottomBar = { BottomAppBarWithIcons(navController) },
             floatingActionButton = {
@@ -226,7 +259,7 @@ fun homeScreen(context: Context,
                         .fillMaxSize()
                 ) {
 
-                    FitnessContent(healthData, alphaVal)
+                    FitnessContent(healthData, alphaVal, userViewModel,context)
                 }
             }
         )
@@ -252,9 +285,16 @@ fun makeCall(context: Context, no: String) {
         }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun FitnessContent(healthData: HealthData, alphaVal:Float) {
+fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserViewModel,context: Context) {
     var searchText by remember { mutableStateOf("") }
+    var progress by remember { mutableFloatStateOf(healthData.steps) }
+    val user by userViewModel.user.observeAsState()
+    var showProgressBar by remember { mutableStateOf(false) }
+    if(progress!=0.0f){
+        showProgressBar=true
+    }
 
     Column(
         modifier = Modifier
@@ -293,66 +333,124 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float) {
 
 
         Spacer(modifier = Modifier.height(24.dp))
+        var currentTipIndex by remember { mutableStateOf(0) }
+        val tips = mutableListOf<String>()
+        val tipsArray = context.resources.getStringArray(R.array.tips)
 
-        // Tip of the Day card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2732)),
-            border = BorderStroke(1.dp, Color(0x50E3A356))
+        if (healthData.steps < 0.75f * (user?.stepGoal?.toFloat() ?: 5000f)) {
+            tips.add(tipsArray[0])  // Tip for steps
+        }
+        if (healthData.heartRate > 100) {
+            tips.add(tipsArray[1])  // Tip for high heart rate
+        }
+        if (healthData.heartRate < 70) {
+            tips.add(tipsArray[2])  // Tip for low heart rate
+        }
+        if (healthData.calories < 300) {
+            tips.add(tipsArray[3])  // Tip for calories
+        }
+        if (healthData.heartRate == 0.0f) {
+            tips.add(tipsArray[4])  // Tip to connect smartwatch
+        }
+        if (tips.isEmpty()) {
+            tips.add(tipsArray[5])  // Default tip if no conditions match
+        }
+        if (tips.contains(tipsArray[4])) {
+            tips.remove(tipsArray[2])  // Remove specific tip based on condition
+        }
+
+
+        LaunchedEffect(tips) {
+            while (true) {
+                delay(4000)
+                currentTipIndex = (currentTipIndex + 1) % tips.size
+            }
+        }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2732)),
+                border = BorderStroke(1.dp, Color(0x50E3A356))
+            ) {
+
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp),
+                    text = "Tip of the Day",
+                    color = Color(0xFFda9d5f),
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center
+                )
+                AnimatedContent(
+                    targetState = tips[currentTipIndex],
+                    transitionSpec = {
+                        slideInHorizontally { it } + fadeIn() with
+                                slideOutHorizontally { -it } + fadeOut()
+                    }
+                ) {
+
+                Text(
+                    modifier = Modifier.padding(15.dp),
+                    text = it,
+                    fontSize = 17.sp,
+                    style = TextStyle(lineHeight = 18.sp),
+                    textAlign = TextAlign.Center
+                )
+
+            }
+                Spacer(modifier = Modifier.height(16.dp))
+
+            }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp),
-                text = "Tip of the Day",
-                color = Color(0xFFda9d5f),
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center
-            )
+            tips.forEachIndexed { index, _ ->
+                Box(
+                    modifier = Modifier
+                        .height(7.dp)
+                        .width(15.dp)
+                        .padding(horizontal = 4.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (index == currentTipIndex) Color(0xFFda9d5f) // active
+                            else Color(0x50da9d5f) // inactive
+                        )
+                )
+            }
+        }
 
-            val healthTip = when {
-                healthData.steps < 5000 -> "Time for a walk! Your steps goal is just around the corner."
-                healthData.heartRate > 100 -> "Relax and breathe deeply. Your heart rate seems a bit high."
-                healthData.calories < 300 -> "Keep moving! Try to burn a few more calories today."
-                else -> "Great job today! Keep up the good work and stay active!"
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                StatItem(
+                    value = healthData.heartRate.toString(),
+                    unit = "BPM",
+                    color = Color(0xFFFF6B6B),
+                    icon = Icons.Default.Favorite
+                )
+                StatItem(
+                    value = healthData.steps.toString(),
+                    unit = "Steps",
+                    color = Color(0xFF4DABF7),
+                    icon = Icons.Default.Person
+                )
+                StatItem(
+                    value = "${String.format("%.2f", healthData.distance / 1000)} km",
+                    unit = "km",
+                    color = Color(0xFF51CF66),
+                    icon = Icons.Default.LocationOn
+                )
             }
 
-            Text(
-                modifier = Modifier.padding(15.dp),
-                text = healthTip,
-                fontSize = 17.sp,
-                style = TextStyle(lineHeight = 18.sp),
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Stats Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            StatItem(
-                value = healthData.heartRate.toString(),
-                unit = "BPM",
-                color = Color(0xFFFF6B6B),
-                icon = Icons.Default.Favorite
-            )
-            StatItem(
-                value = healthData.steps.toString(),
-                unit = "Steps",
-                color = Color(0xFF4DABF7),
-                icon = Icons.Default.Person
-            )
-            StatItem(
-                value = "${String.format("%.2f", healthData.distance/1000)} km",
-                unit = "km",
-                color = Color(0xFF51CF66),
-                icon = Icons.Default.LocationOn
-            )
-        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -385,26 +483,35 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float) {
                         textAlign = TextAlign.Start,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    LinearProgressIndicator(
-                        progress = 0.7f, // Example progress (70%)
-                        color = Color(0xFFda9d5f),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                    )
-                    Text(
-                        text = "Steps: 7000 / 10000",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 4.dp)
+                    if (showProgressBar) {
+                        user?.stepGoal?.toFloat()?.let {
+                            LinearProgressIndicator(
+                                progress = progress.toFloat() / it,
+                                color = Color(0xFFda9d5f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                            )
+
+
+                            Text(
+                                text = "Steps: ${progress.toInt()} / ${it.toInt()} ",
+                                fontSize = 12.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
+                }
+                Box(modifier = Modifier.size(110.dp),
+                    contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(id = R.drawable.goals), // Replace with your asset
+                        contentDescription = "Daily Goals",
+                        Modifier.size(80.dp)
                     )
                 }
-                Image(
-                    painter = painterResource(id = R.drawable.vitals), // Replace with your asset
-                    contentDescription = "Daily Goals",
-                    Modifier.size(80.dp)
-                )
             }
         }
         Spacer(Modifier.padding(15.dp))
@@ -416,14 +523,25 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float) {
             border = BorderStroke(1.dp, Color(0x50E3A356))
         ){
             Row(modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly) {
-                Column(modifier = Modifier.width(230.dp)){
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.family),
+                    contentDescription = "family",
+                    Modifier.size(110.dp)
+                        .padding(start = 5.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(5.dp)){
                     Box {
                         Text(
                             text = "Let your family care you!",
                             modifier = Modifier
                                 .align(alignment = Alignment.TopStart)
-                                .padding(8.dp),
+                                .padding(5.dp),
                             color = Color(0xFFda9d5f),
                             fontSize = 20.sp,
                         )
@@ -432,12 +550,11 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float) {
                         text = "Stay connected with loved ones as they monitor your health in real time, ensuring care and support when you need it most.",
                         fontSize = 14.sp,
                         modifier = Modifier
-                            .padding(8.dp, 0.dp, 8.dp, 20.dp),
+                            .padding(5.dp,0.dp, 10.dp, 10.dp),
                         textAlign = TextAlign.Justify,
                         style = TextStyle(lineHeight = 16.5.sp)
                     )
                 }
-                Image(painter = painterResource(id = R.drawable.family), contentDescription = "family",Modifier.size(110.dp))
             }
         }
         Spacer(Modifier.padding(15.dp))
