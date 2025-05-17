@@ -17,7 +17,6 @@ fun FetchFriendsDetails(friendsId:String): Pair<List<String>, Map<String, List<D
 
     val dataMap = remember { mutableStateOf<Map<String, List<DocumentSnapshot>>>(emptyMap()) }
 
-    // List your sub-collections here
     val collections = listOf( "totalCalories","steps","distance", "heartRate", "latitude", "longitude",)
 
     LaunchedEffect(Unit) {
@@ -43,8 +42,8 @@ fun getIconForMetric(metric: String): Int {
     return when (metric) {
         "distance" -> R.drawable.km
         "heartRate" -> R.drawable.heartbeat
-        "latitude" -> R.drawable.location_vector
-        "longitude" -> R.drawable.location_vector
+        "latitude" -> R.drawable.baseline_location_pin_24
+        "longitude" -> R.drawable.baseline_location_pin_24
         "steps" -> R.drawable.steps
         "totalCalories" -> R.drawable.family
         else -> R.drawable.family

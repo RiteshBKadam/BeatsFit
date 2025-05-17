@@ -27,7 +27,6 @@ fun BottomAppBarWithIcons(navController: NavController) {
                 onClick = {
                     val currentRoute =
                         navController.currentBackStackEntry?.destination?.route
-                    Log.d("ASFGEFAGERGERTG",currentRoute.toString())
                     if (currentRoute?.contains("home_screen") == false) {
                         val isPermissionGranted=true
                         val route = "home_screen/$isPermissionGranted"
@@ -97,7 +96,7 @@ fun BottomAppBarWithIcons(navController: NavController) {
                         navController.currentBackStackEntry?.destination?.route
                     // Navigate only if the current route is not already "profile_screen"
                     if (currentRoute != "friends") {
-                        navController.navigate("members"){
+                        navController.navigate("friends"){
                             popUpTo("home_screen/true")
                         }
                     }

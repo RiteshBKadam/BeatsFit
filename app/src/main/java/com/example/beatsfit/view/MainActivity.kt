@@ -34,6 +34,8 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.Scope
+import com.google.android.gms.fitness.Fitness
 import com.google.firebase.firestore.FirebaseFirestore
 import org.osmdroid.config.Configuration
 
@@ -118,7 +120,7 @@ fun AppNavGraph(
             val account = GoogleSignIn.getLastSignedInAccount(context)
             account?.let{
                 if (isPermissionGranted != null) {
-                    FitnessScreen(
+                    HomeScreen(
                         context = context,
                         account = it,
                         navController = navController,
@@ -130,7 +132,7 @@ fun AppNavGraph(
             }
         }
 
-        composable("new_user") {
+        composable("sign_up") {
             val account = GoogleSignIn.getLastSignedInAccount(context)
             account?.let {
                 SignUp(
@@ -152,12 +154,16 @@ fun AppNavGraph(
         }
 
         composable("friends") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             account?.let {
-                FriendsScreen(navController, account)
+                FriendsScreen(navController,account,userViewModel)
             }
         }
 
         composable("health") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             account?.let {
                 HealthDetailScreen(
                     context = context,
@@ -165,41 +171,57 @@ fun AppNavGraph(
                     navController = navController,
                     beatsfitViewModel = beatsfitViewModel,
                     locationViewModel = locationViewModel,
-                    locationUtils = locationUtils
+                    locationUtils = locationUtils,
+                    userViewModel = userViewModel
                 )
             }
         }
+        composable("graphDetail/{title}") {backStackEntry->
+            val title = backStackEntry.arguments?.getString("title")
+            val account = GoogleSignIn.getLastSignedInAccount(context)
 
-        composable("graphDetail") {
-            GraphDetailScreen(
-                title = "title",
-                chartData = listOf(7800f, 8200f, 7600f, 8500f, 8900f, 9100f, 8700f)
-            )
+            account?.let {
+                GraphDetailScreen(
+                    title = title.toString(),
+                    navController,
+                    context,
+                    userViewModel,
+                    it
+                )
+            }
         }
-
         composable("members") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             account?.let {
                 Members(account = it, navController = navController, context = context,userViewModel)
             }
         }
 
         composable("user_profile") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             account?.let {
                 UserProfileScreen(navController, context,it,userViewModel)
             }
         }
         composable("healthAndFitness") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             account?.let {
                 HealthAndFitness(navController,userViewModel)
             }
         }
         composable("trackFamily") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             account?.let {
                 val id=account.id
                 TrackFamily(navController,userViewModel,context,id)
             }
         }
         composable("monitor_details/{friendsId}") {backStackEntry->
+
             val friendsId = backStackEntry.arguments?.getString("friendsId")
             if (friendsId != null) {
                 MonitorDetailsScreen(
@@ -210,6 +232,8 @@ fun AppNavGraph(
             }
         }
         composable("dietAndGoals") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             if (account != null) {
                 DietAndGoals(
                     context = context,
@@ -219,6 +243,8 @@ fun AppNavGraph(
             }
         }
         composable("emergency") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
             if (account != null) {
                 EmergencyAndSharing(
                     context = context,
@@ -229,6 +255,7 @@ fun AppNavGraph(
             }
         }
         composable("appPreferences") {
+
                 AppPreferences(
                     context = context,
                     navController = navController
@@ -257,6 +284,9 @@ fun AppNavGraph(
 fun createGoogleSignInClient(context: Context): GoogleSignInClient {
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestEmail()
+        .requestScopes(
+            Scope("https://www.googleapis.com/auth/fitness.oxygen_saturation.read")
+        )
         .build()
     return GoogleSignIn.getClient(context, gso)
 }

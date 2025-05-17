@@ -6,5 +6,6 @@ data class HealthData(
     val heartRate: Float,
     val calories: Float,
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
+    val sleepData: Map<String, String>
 )

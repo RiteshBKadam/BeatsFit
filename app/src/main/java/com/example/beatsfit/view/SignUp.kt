@@ -6,12 +6,17 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -21,6 +26,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.example.beatsfit.room.data.User
 import com.example.beatsfit.util.formatPhoneNumber
@@ -33,6 +43,8 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 import kotlinx.coroutines.launch
 import com.example.beatsfit.R
+import com.example.beatsfit.util.GenereateToken
+import com.example.beatsfit.util.rememberImeState
 
 
 @Composable
@@ -56,6 +68,7 @@ fun SignUp(
     var isLoading by remember { mutableStateOf(true) }
     var contacts by remember { mutableStateOf<List<Contact>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
+
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -126,16 +139,32 @@ fun SignUp(
             CircularProgressIndicator()
         }
     } else if (showMobileInput && currentAccount != null) {
-        Column(modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .background(Color(0xFF0f191f)),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
+        var imeState = rememberImeState()
+        var scrollState= rememberScrollState()
 
-            Row(){
-                Text("Beats", fontFamily = quicksand, fontSize = 30.sp, color = Color.White)
-                Text("Fit", fontFamily = mistrully, fontSize = 30.sp, color = Color.White)
+        LaunchedEffect(key1 = imeState.value) {
+            if(imeState.value){
+                scrollState.animateScrollTo(scrollState.maxValue)
+            }
+        }
+
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .background(Color(0xFF0f191f)),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.signup))
+            val progress by animateLottieCompositionAsState(composition, iterations = LottieConstants.IterateForever)
+            Column(modifier = Modifier.padding(top = 100.dp)
+            ){
+                LottieAnimation(
+                    composition, progress, modifier = Modifier
+                        .size(300.dp)
+                )
+            }
+            Row{
+                Text("Beats", fontFamily = quicksand, fontSize = 50.sp, color = Color.White)
+                Text("Fit", fontFamily = mistrully, fontSize = 48.sp, color = Color.White)
 
             }
             TextField(
@@ -150,8 +179,16 @@ fun SignUp(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
                 ),
+                colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedTextColor = Color.Transparent,
+                    focusedTextColor = Color.White,
+                    focusedLabelColor = Color.Gray,
+                    unfocusedLabelColor = Color.Gray,),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(50.dp,50.dp,50.dp, bottom = 0.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -159,13 +196,12 @@ fun SignUp(
             Button(
                 onClick = {
                     if (mobileNumber.length == 10) {
-                        isLoading = true
                         val db = FirebaseFirestore.getInstance()
                         val account = currentAccount!!
                         val user = hashMapOf(
                             "id" to (account.id ?: "Unknown ID"),
-                            "first_name" to (account.givenName ?: "Unknown Name"),
-                            "last_name" to (account.familyName ?: "Unknown Last Name"),
+                            "first_name" to (account.givenName ?: ""),
+                            "last_name" to (account.familyName ?: ""),
                             "email" to (account.email ?: "Unknown Email"),
                             "mobile_number" to formatPhoneNumber(mobileNumber)
                         )
@@ -181,10 +217,10 @@ fun SignUp(
                                 ).show()
                                 isDataSaved = true
                                 isLoading = false
+                                GenereateToken(account.id.toString())
                                 val isPermissionGranted=true
                                 navController.navigate("home_screen/$isPermissionGranted") {
-                                    popUpTo("sign_in") { inclusive = true }
-                                    launchSingleTop = true
+                                    popUpTo("sign_up") { inclusive = true }
                                 }
                             }
                             .addOnFailureListener { e ->
@@ -204,7 +240,9 @@ fun SignUp(
                         ).show()
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(top = 10.dp)
             ) {
                 Text("Verify and Save")
             }

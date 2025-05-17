@@ -26,7 +26,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,7 +59,6 @@ import com.example.beatsfit.model.HealthData
 import com.example.beatsfit.util.LocationUtils
 import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.R
-import com.example.beatsfit.room.data.User
 import com.example.beatsfit.util.BottomAppBarWithIcons
 import com.example.beatsfit.util.TopAppBar
 import com.example.beatsfit.viewmodel.UserViewModel
@@ -69,9 +70,8 @@ import kotlinx.coroutines.delay
 
 private const val REQUEST_OAUTH_REQUEST_CODE=1
 var fitnessOptions: FitnessOptions? =null
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun FitnessScreen(navController: NavController,
+fun HomeScreen(navController: NavController,
                   context: Context,
                   account: GoogleSignInAccount,
                   beatsfitViewModel: BeatsfitViewModel,
@@ -247,19 +247,25 @@ fun homeScreen(context: Context,
                         modifier = Modifier.border(1.dp, Color.Red, CircleShape)
 
                     ) {
-                        Text("SOS")
+                        var text by remember { mutableStateOf("") }
+                        if(isExpanded){
+                            text="X"
+                        }else{
+                            text="SOS"
+                        }
+                        Text(text)
                     }
                 }
             },
             content = {
-                Box(
+                Box (
                     modifier = Modifier
                         .padding(it)
                         .verticalScroll(scrollState)
                         .fillMaxSize()
                 ) {
 
-                    FitnessContent(healthData, alphaVal, userViewModel,context)
+                    FitnessContent(healthData, alphaVal, userViewModel,context,navController)
                 }
             }
         )
@@ -287,7 +293,7 @@ fun makeCall(context: Context, no: String) {
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserViewModel,context: Context) {
+fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserViewModel,context: Context,navController: NavController) {
     var searchText by remember { mutableStateOf("") }
     var progress by remember { mutableFloatStateOf(healthData.steps) }
     val user by userViewModel.user.observeAsState()
@@ -337,26 +343,29 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserVie
         val tips = mutableListOf<String>()
         val tipsArray = context.resources.getStringArray(R.array.tips)
 
-        if (healthData.steps < 0.75f * (user?.stepGoal?.toFloat() ?: 5000f)) {
-            tips.add(tipsArray[0])  // Tip for steps
+        if(user?.stepGoal==0 ||user?.stepGoal==null){
+            tips.add(tipsArray[6])
         }
-        if (healthData.heartRate > 100) {
+        if (healthData.steps < 0.75f * (user?.stepGoal?.toFloat() ?: 3000f)) {
+            tips.add(tipsArray[0])  // Tip for steps
+
+        }
+        if (healthData.heartRate == 0.0f) {
+            tips.add(tipsArray[4])  // Tip to connect smartwatch
+        }
+
+        if (healthData.heartRate > 100 && !tips.contains(tipsArray[4])) {
             tips.add(tipsArray[1])  // Tip for high heart rate
         }
-        if (healthData.heartRate < 70) {
+        if (healthData.heartRate < 70 && !tips.contains(tipsArray[4])) {
             tips.add(tipsArray[2])  // Tip for low heart rate
         }
         if (healthData.calories < 300) {
             tips.add(tipsArray[3])  // Tip for calories
         }
-        if (healthData.heartRate == 0.0f) {
-            tips.add(tipsArray[4])  // Tip to connect smartwatch
-        }
+
         if (tips.isEmpty()) {
             tips.add(tipsArray[5])  // Default tip if no conditions match
-        }
-        if (tips.contains(tipsArray[4])) {
-            tips.remove(tipsArray[2])  // Remove specific tip based on condition
         }
 
 
@@ -368,37 +377,43 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserVie
         }
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(115.dp)
+                    .align(Alignment.CenterHorizontally),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2732)),
-                border = BorderStroke(1.dp, Color(0x50E3A356))
+                border = BorderStroke(1.dp, Color(0x50E3A356)),
             ) {
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp),
-                    text = "Tip of the Day",
-                    color = Color(0xFFda9d5f),
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center
-                )
-                AnimatedContent(
-                    targetState = tips[currentTipIndex],
-                    transitionSpec = {
-                        slideInHorizontally { it } + fadeIn() with
-                                slideOutHorizontally { -it } + fadeOut()
+                Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center){
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp),
+                        text = "Tip of the Day",
+                        color = Color(0xFFda9d5f),
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    AnimatedContent(
+                        targetState = tips[currentTipIndex],
+                        transitionSpec = {
+                            slideInHorizontally { it } + fadeIn() with
+                                    slideOutHorizontally { -it } + fadeOut()
+                        }
+                    ) {
+
+                        Text(
+                            modifier = Modifier.padding(15.dp),
+                            text = it,
+                            fontSize = 17.sp,
+                            style = TextStyle(lineHeight = 18.sp),
+                            textAlign = TextAlign.Center
+                        )
+
                     }
-                ) {
-
-                Text(
-                    modifier = Modifier.padding(15.dp),
-                    text = it,
-                    fontSize = 17.sp,
-                    style = TextStyle(lineHeight = 18.sp),
-                    textAlign = TextAlign.Center
-                )
-
-            }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
 
             }
@@ -455,7 +470,9 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserVie
         Spacer(modifier = Modifier.height(24.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = { navController.navigate("dietAndGoals") }),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2732)),
             border = BorderStroke(1.dp, Color(0x50E3A356))
         ){
@@ -484,23 +501,25 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserVie
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
                     if (showProgressBar) {
-                        user?.stepGoal?.toFloat()?.let {
-                            LinearProgressIndicator(
-                                progress = progress.toFloat() / it,
-                                color = Color(0xFFda9d5f),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                            )
+                        user?.stepGoal?.let {
+                            if (it != 0) {
+                                LinearProgressIndicator(
+                                    progress = progress.toFloat() / it,
+                                    color = Color(0xFFda9d5f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                )
 
 
-                            Text(
-                                text = "Steps: ${progress.toInt()} / ${it.toInt()} ",
-                                fontSize = 12.sp,
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
+                                Text(
+                                    text = "Steps: ${progress.toInt()} / ${it.toInt()} ",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -518,7 +537,8 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserVie
 
 
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .clickable(onClick = {navController.navigate("friends")}),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2732)),
             border = BorderStroke(1.dp, Color(0x50E3A356))
         ){
@@ -528,7 +548,8 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserVie
                 Image(
                     painter = painterResource(id = R.drawable.family),
                     contentDescription = "family",
-                    Modifier.size(110.dp)
+                    Modifier
+                        .size(110.dp)
                         .padding(start = 5.dp)
                 )
 
@@ -656,6 +677,7 @@ fun buildFitnessOptions(): FitnessOptions {
         .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
         .addDataType(DataType.TYPE_WORKOUT_EXERCISE, FitnessOptions.ACCESS_READ)
         .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
+        .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_WRITE)
         .build()
 
 }

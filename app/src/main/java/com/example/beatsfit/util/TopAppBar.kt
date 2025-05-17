@@ -61,6 +61,10 @@ fun TopAppBar(navController: NavController,userViewModel: UserViewModel,context:
                 title = "Good ${greetString()}!"
                 alpha = 1.0f
             }
+            currentRoute == "friends" -> {
+                title = "Members"
+                alpha = 0.0f
+            }
             currentRoute == "members" -> {
                 title = "Members"
                 alpha = 0.0f
@@ -69,9 +73,9 @@ fun TopAppBar(navController: NavController,userViewModel: UserViewModel,context:
                 title = "Health Details"
                 alpha = 0.0f
             }
-            currentRoute == "user_profile" -> {
-                title = "Profile"
-                alpha = 0.0f
+            currentRoute?.contains("graphDetail") == true -> {
+                title="Health Details"
+                alpha=0.0f
             }
             currentRoute == "trackFamily" -> {
                 title = "Family's Health"

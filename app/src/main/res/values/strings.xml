@@ -6,8 +6,9 @@
         <item>Relax and breathe deeply. Your heart rate seems a bit high.</item>
         <item>Feeling too relaxed? A quick walk might help boost energy!</item>
         <item>Keep moving! Try to burn a few more calories today.</item>
-        <item>Connect SmartWatch for better heartbeat monitoring</item>
+        <item>Sync Data from SmartWatch App for better heartbeat monitoring</item>
         <item>Great job today! Keep up the good work and stay active!</item>
+        <item>Set your Steps Goal for a day</item>
     </string-array>
 
 </resources>

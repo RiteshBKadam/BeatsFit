@@ -20,7 +20,8 @@ class BeatsfitViewModel : ViewModel() {
             heartRate = 0f,
             calories = 0f,
             latitude = 0.0,
-            longitude = 0.0
+            longitude = 0.0,
+            sleepData = emptyMap()
         )
     )
     val healthData: StateFlow<HealthData> = _healthData
@@ -44,14 +45,16 @@ class BeatsfitViewModel : ViewModel() {
             fetchGoogleFitData(
                 context = context,
                 account = account,
-                onDataReceived = { steps, distance, heartRate, calories, latitude, longitude ->
+                onDataReceived = { steps, distance, heartRate, calories, latitude, longitude, sleepData->
                     _healthData.value = HealthData(
                         steps = steps,
                         distance = distance,
                         heartRate = heartRate,
                         calories = calories,
                         latitude = location?.latitude ?: 0.0,
-                        longitude = location?.longitude ?: 0.0
+                        longitude = location?.longitude ?: 0.0,
+                        sleepData=sleepData
+
                     )
                 },
                 locationUtils = locationUtils,

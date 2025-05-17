@@ -2,9 +2,7 @@ package com.example.beatsfit.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -24,7 +22,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.beatsfit.R
 import com.example.beatsfit.room.data.User
-import com.example.beatsfit.util.isUserLoggedIn
+import com.example.beatsfit.util.GenereateToken
 import com.example.beatsfit.util.saveLoginDetails
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -60,7 +58,7 @@ fun Initiator(
                 db.collection("users").document(userId).get()
                     .addOnSuccessListener { document ->
                         val newUser= User(
-                            id = account.id.toString(),
+                            id = userId,
                             firstName = account.givenName.toString(),
                             lastName = account.familyName.toString(),
                             imageUri = account.photoUrl?.toString(),
@@ -71,17 +69,16 @@ fun Initiator(
                             stepGoal =0,
                             cyclingGoal = 0
                         )
-                        viewModel.insertUser(newUser)
-                        saveLoginDetails(context,account,true)
-
                         if (document.exists()) {
                             isLoading = false
                             val isPermissionGranted=true
+                            GenereateToken(userId)
+                            viewModel.insertUser(newUser)
+                            saveLoginDetails(context,account,true)
                             navController.navigate("home_screen/$isPermissionGranted")
-
                         } else {
                             isLoading = false
-                            navController.navigate("new_user")
+                            navController.navigate("sign_up")
                         }
                     }
                     .addOnFailureListener { e ->
@@ -108,7 +105,7 @@ fun Initiator(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     // Lottie Animation
-                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.rhisss))
+                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.initiator))
                     LottieAnimation(
                         composition,
                         modifier = Modifier.size(350.dp),

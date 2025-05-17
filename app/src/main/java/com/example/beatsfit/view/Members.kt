@@ -324,10 +324,5 @@ fun LoadingScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "Loading contacts...",
-            fontSize = 18.sp,
-            color = Color(0xD3FFFFFF)
-        )
     }
 }

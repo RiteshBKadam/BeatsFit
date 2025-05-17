@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.example.beatsfit"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.beatsfit"
         minSdk = 33
-        targetSdk = 34
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
@@ -44,9 +44,10 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-
+    implementation(libs.androidx.core.ktx.v1120)
+    implementation(libs.androidx.appcompat)
+    implementation (libs.firebase.messaging)
+    implementation (libs.connect.client)
     implementation (libs.osmdroid.android)
     implementation (libs.gson)
     implementation (libs.play.services.fitness)

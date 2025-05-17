@@ -115,7 +115,12 @@ fun ContactPickerScreen(
                                                 .addOnFailureListener { e ->
                                                     Log.e("ContactPicker", "Error saving contacts: ${e.message}")
                                                 }
+                                        }else{
+                                            Log.d("Firebaseeeeeee", it.documents[0].id.toString(),)
                                         }
+                                    }
+                                    .addOnFailureListener {
+                                        Log.d("Firebaseeeeeee", "get failed with ", it)
                                     }
                             }
 
