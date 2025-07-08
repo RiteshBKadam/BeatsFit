@@ -5,10 +5,9 @@ import android.app.job.JobParameters
 import android.app.job.JobService
 import android.content.Context
 import android.util.Log
+import com.example.beatsfit.util.LocationUtils
 import com.example.beatsfit.viewmodel.BeatsfitViewModel
 import com.example.beatsfit.viewmodel.LocationViewModel
-import com.example.beatsfit.util.LocationUtils
-import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.FirebaseApp
@@ -21,7 +20,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 import kotlin.math.pow
 
 @SuppressLint("SpecifyJobSchedulerIdRange")

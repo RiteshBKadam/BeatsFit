@@ -20,22 +20,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.beatsfit.model.LocationService
+import com.example.beatsfit.room.data.UserDatabase
 import com.example.beatsfit.room.data.UserRepository
 import com.example.beatsfit.ui.theme.BeatsFitTheme
-import com.example.beatsfit.viewmodel.BeatsfitViewModel
-import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.util.LocationUtils
 import com.example.beatsfit.util.UserViewModelFactory
-import com.example.beatsfit.viewmodel.UserViewModel
-import com.example.beatsfit.room.data.UserDatabase
-import com.example.beatsfit.model.LocationService
 import com.example.beatsfit.util.isUserLoggedIn
+import com.example.beatsfit.viewmodel.BeatsfitViewModel
+import com.example.beatsfit.viewmodel.LocationViewModel
+import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
-import com.google.android.gms.fitness.Fitness
 import com.google.firebase.firestore.FirebaseFirestore
 import org.osmdroid.config.Configuration
 

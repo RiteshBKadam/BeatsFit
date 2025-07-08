@@ -1,25 +1,19 @@
 package com.example.beatsfit.model
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
-import com.example.beatsfit.viewmodel.LocationViewModel
 import com.example.beatsfit.util.LocationUtils
+import com.example.beatsfit.viewmodel.LocationViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.fitness.Fitness
-import com.google.android.gms.fitness.FitnessActivities
-import com.google.android.gms.fitness.data.DataSource
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Field
-import com.google.android.gms.fitness.data.SleepStages
 import com.google.android.gms.fitness.request.DataReadRequest
-import com.google.android.gms.fitness.request.DataSourcesRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -27,7 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resumeWithException
 
 
 suspend fun fetchFitnessData(

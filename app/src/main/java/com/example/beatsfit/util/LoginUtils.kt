@@ -10,10 +10,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
-
-
 
 
 fun saveLoginDetails(context: Context, username: GoogleSignInAccount, password: Boolean) {
