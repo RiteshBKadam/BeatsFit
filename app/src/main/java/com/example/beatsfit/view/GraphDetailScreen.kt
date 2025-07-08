@@ -1,44 +1,37 @@
 package com.example.beatsfit.view
 
 import android.content.Context
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import co.yml.charts.axis.AxisData
+import co.yml.charts.common.model.Point
+import co.yml.charts.ui.barchart.BarChart
+import co.yml.charts.ui.barchart.models.BarChartData
+import co.yml.charts.ui.barchart.models.BarData
+import co.yml.charts.ui.barchart.models.BarStyle
+import com.example.beatsfit.R
 import com.example.beatsfit.util.BottomAppBarWithIcons
 import com.example.beatsfit.util.TopAppBar
 import com.example.beatsfit.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.example.beatsfit.R
+import com.google.android.gms.common.util.DataUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,38 +72,53 @@ fun GraphDetailScreen(title: String,
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+                BeatsFitBarChart()
 
-                BarChart(resource,borderColor,title)
             }
         }
     )
 }
 
+
+
 @Composable
-fun BarChart(resource: Int, borderColor: Color, title: String) {
-    Card(
-        modifier = Modifier.padding(15.dp,15.dp, 15.dp, 25.dp)
-            .fillMaxSize()
-            .background(Color.Transparent),
-        shape = RoundedCornerShape(50.dp),
-        border = BorderStroke(2.dp, Color(0xFF2B474F))
-        ){
-        Column(modifier = Modifier.fillMaxSize()
-            .background(Color(0xFF0f191f))) {
-            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-                    .padding(20.dp)){
-                Text(title, color = Color.White, fontSize = 20.sp,)
+fun BeatsFitBarChart() {
+    val barData = listOf(
+        BarData(Point(0f, 8000f), label = "Steps"),
+        BarData(Point(1f, 450f), label = "Calories"),
+        BarData(Point(2f, 7.5f), label = "Sleep"),
+        BarData(Point(3f, 72f), label = "Heart Rate")
+    )
 
-                Image(painter = painterResource(resource),
-                    contentDescription = "icon",
-                    modifier = Modifier.border(1.5f.dp,borderColor,CircleShape)
-                        .padding(8.dp)
-                        .size(30.dp),alignment = Alignment.Center)
+    val xAxisData = AxisData.Builder()
+        .axisStepSize(30.dp)
+        .steps(barData.size - 1)
+        .labelData { index -> barData[index].label }
+        .build()
 
-            }
-
+    val yAxisData = AxisData.Builder()
+        .steps(5)
+        .labelData { i ->
+            val maxY = barData.maxOf { it.point.y }
+            val step = maxY / 5
+            (i * step).toInt().toString()
         }
-    }
+        .build()
+
+    val barChartData = BarChartData(
+        chartData = barData,
+        xAxisData = xAxisData,
+        yAxisData = yAxisData,
+        barStyle = BarStyle(
+            barWidth = 20.dp)
+    )
+
+    BarChart(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .padding(16.dp),
+        barChartData = barChartData
+    )
 }
+

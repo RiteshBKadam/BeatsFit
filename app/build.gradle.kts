@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId = "com.example.beatsfit"
         minSdk = 33
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -43,6 +43,9 @@ android {
 }
 
 dependencies {
+
+    implementation(libs.ycharts)
+
 
     implementation(libs.androidx.core.ktx.v1120)
     implementation(libs.androidx.appcompat)
