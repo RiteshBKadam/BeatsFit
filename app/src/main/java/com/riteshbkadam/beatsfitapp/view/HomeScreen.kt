@@ -205,11 +205,6 @@ fun HomeScreen(
 
         ) {
 
-            Row {
-                Text("Beats", fontFamily = quicksand, fontSize = 50.sp, color = Color.White)
-                Text("Fit", fontFamily = mistrully, fontSize = 48.sp, color = Color.White)
-
-            }
         }
     }
 }
