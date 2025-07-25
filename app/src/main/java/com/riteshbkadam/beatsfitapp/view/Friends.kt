@@ -95,7 +95,7 @@ fun FriendsScreen(navController: NavController, account: GoogleSignInAccount,use
         else{
             if(_savedContacts != null && !_savedContacts!!.isEmpty()) {
                 navController.navigate("members"){
-                    popUpTo("home_screen/true")
+                    popUpTo("home_screen")
                 }
             }
 

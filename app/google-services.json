@@ -7,18 +7,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:289566404435:android:fc7e19f62187c3b8e8fba6",
+        "mobilesdk_app_id": "1:289566404435:android:18f016c1f3f7e141e8fba6",
         "android_client_info": {
-          "package_name": "com.example.beatsfit"
+          "package_name": "com.riteshbkadam.beatsfitapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "289566404435-bhi6j8j089uigd2h8lit4kfo6rao6mii.apps.googleusercontent.com",
+          "client_id": "289566404435-3lb75q0vtip5sod3lhv73ohm2rvlqq3l.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.beatsfit",
-            "certificate_hash": "0a7d1f1a55f53ebd6550c6389e8d61319216e1e8"
+            "package_name": "com.riteshbkadam.beatsfitapp",
+            "certificate_hash": "f0499cf3a433938a4031d80ee638c218f6590d2e"
           }
         },
         {

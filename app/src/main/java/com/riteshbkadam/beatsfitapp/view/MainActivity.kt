@@ -122,15 +122,15 @@ fun AppNavGraph(
 
     val firestore=FirebaseFirestore.getInstance()
 
-    var startDestination by remember{ mutableStateOf("") }
 
-    if(!isUserLoggedIn(context)){
-        startDestination="initiator"
-    }else{
-        startDestination="home_screen"
-    }
-    NavHost(navController, startDestination = startDestination) {
 
+    NavHost(navController, startDestination = "splash") {
+        composable("request_permissions") {
+            PermissionsScreen(navController)
+        }
+        composable("splash") {
+            Splash(navController, isUserLoggedIn(context))
+        }
         composable("initiator") {
             Initiator(
                 context = context,
@@ -138,6 +138,17 @@ fun AppNavGraph(
                 navController = navController,
                 viewModel = userViewModel
             )
+        }
+        composable("sign_up") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+            account?.let {
+                SignUp(
+                    context = context,
+                    navController = navController,
+                    userViewModel,
+                    googleSignInClient
+                )
+            }
         }
 
         composable(route = "home_screen") {
@@ -158,37 +169,7 @@ fun AppNavGraph(
         }
 
 
-        composable("sign_up") {
-            val account = GoogleSignIn.getLastSignedInAccount(context)
-            account?.let {
-                SignUp(
-                    context = context,
-                    navController = navController,
-                    userViewModel,
-                    googleSignInClient
-                )
-            }
-        }
 
-        composable("location_screen/{friendsId}") {backStackEntry->
-            val friendsId = backStackEntry.arguments?.getString("friendsId")
-            if (friendsId != null) {
-                MapsScreen(
-                    context = context,friendsId
-                )
-            }
-        }
-
-        composable("friends") {
-            val account = GoogleSignIn.getLastSignedInAccount(context)
-
-            account?.let {
-                FriendsScreen(navController,account,userViewModel)
-            }
-        }
-        composable("request_permissions") {
-            PermissionsScreen(navController)
-        }
 
         composable("health") {
             val account = GoogleSignIn.getLastSignedInAccount(context)
@@ -205,6 +186,14 @@ fun AppNavGraph(
                 )
             }
         }
+        composable("trackFamily") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
+            account?.let {
+                val id=account.id
+                TrackFamily(navController,userViewModel,context,id)
+            }
+        }
         composable("graphDetail/{title}") {backStackEntry->
             val title = backStackEntry.arguments?.getString("title")
             val account = GoogleSignIn.getLastSignedInAccount(context)
@@ -219,6 +208,13 @@ fun AppNavGraph(
                 )
             }
         }
+        composable("friends") {
+            val account = GoogleSignIn.getLastSignedInAccount(context)
+
+            account?.let {
+                FriendsScreen(navController,account,userViewModel)
+            }
+        }
         composable("members") {
             val account = GoogleSignIn.getLastSignedInAccount(context)
 
@@ -226,6 +222,17 @@ fun AppNavGraph(
                 Members(account = it, navController = navController, context = context,userViewModel)
             }
         }
+
+
+        composable("location_screen/{friendsId}") {backStackEntry->
+            val friendsId = backStackEntry.arguments?.getString("friendsId")
+            if (friendsId != null) {
+                MapsScreen(
+                    context = context,friendsId
+                )
+            }
+        }
+
 
         composable("user_profile") {
             val account = GoogleSignIn.getLastSignedInAccount(context)
@@ -241,14 +248,7 @@ fun AppNavGraph(
                 HealthAndFitness(navController, userViewModel)
             }
         }
-        composable("trackFamily") {
-            val account = GoogleSignIn.getLastSignedInAccount(context)
 
-            account?.let {
-                val id=account.id
-                TrackFamily(navController,userViewModel,context,id)
-            }
-        }
         composable("monitor_details/{friendsId}") {backStackEntry->
 
             val friendsId = backStackEntry.arguments?.getString("friendsId")

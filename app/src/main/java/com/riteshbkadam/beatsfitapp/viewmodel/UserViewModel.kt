@@ -9,7 +9,7 @@ import com.riteshbkadam.beatsfitapp.room.data.UserRepository
 import kotlinx.coroutines.launch
 
 
-class UserViewMode(private val repository: UserRepository) : ViewModel() {
+class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
     private val _user = MutableLiveData<User?>()
     val user: LiveData<User?> get() = _user

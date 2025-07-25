@@ -43,6 +43,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -78,7 +80,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -95,22 +100,26 @@ import com.riteshbkadam.beatsfitapp.model.HealthData
 import com.riteshbkadam.beatsfitapp.util.BottomAppBarWithIcons
 import com.riteshbkadam.beatsfitapp.util.LocationUtils
 import com.riteshbkadam.beatsfitapp.util.TopAppBar
+import com.riteshbkadam.beatsfitapp.util.searchableItems
 import com.riteshbkadam.beatsfitapp.viewmodel.BeatsfitViewModel
 import com.riteshbkadam.beatsfitapp.viewmodel.LocationViewModel
 import com.riteshbkadam.beatsfitapp.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 
-private const val REQUEST_OAUTH_REQUEST_CODE=1
-var fitnessOptions: FitnessOptions? =null
+private const val REQUEST_OAUTH_REQUEST_CODE = 1
+var fitnessOptions: FitnessOptions? = null
+
 @Composable
-fun HomeScreen(navController: NavController,
-                  context: Context,
-                  account: GoogleSignInAccount,
-                  beatsfitViewModel: BeatsfitViewModel,
-                  userViewModel: UserViewModel,
-                  isPermissionGranted: MutableState<Boolean>) {
-
-
+fun HomeScreen(
+    navController: NavController,
+    context: Context,
+    account: GoogleSignInAccount,
+    beatsfitViewModel: BeatsfitViewModel,
+    userViewModel: UserViewModel,
+    isPermissionGranted: MutableState<Boolean>
+) {
+    val healthData by beatsfitViewModel.healthData.collectAsState()
+    val isInitialized = remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp
     val isTablet = screenWidthDp >= 600
@@ -118,22 +127,25 @@ fun HomeScreen(navController: NavController,
     val permissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACTIVITY_RECOGNITION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
     )
-
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) {
-
+        isPermissionGranted.value = it.values.all { granted -> granted }
     }
 
-    val allPermissionsGranted = permissions.all {
-        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-    }
-
+    val mistrully = FontFamily(
+        Font(R.font.mistrully, FontWeight.Normal),
+    )
+    val quicksand= FontFamily(
+        Font(R.font.quicksand, FontWeight.Normal)
+    )
+    // Step 1: Prepare all setup in background before showing UI
     LaunchedEffect(Unit) {
         fitnessOptions = buildFitnessOptions()
+
         fitnessOptions?.let {
             if (!GoogleSignIn.hasPermissions(account, it)) {
                 GoogleSignIn.requestPermissions(
@@ -142,9 +154,10 @@ fun HomeScreen(navController: NavController,
                     account, it
                 )
             }
-           if(!allPermissionsGranted){
-               launcher.launch(permissions)
-           }
+        }
+
+        val allPermissionsGranted = permissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
 
         if (!allPermissionsGranted) {
@@ -152,9 +165,17 @@ fun HomeScreen(navController: NavController,
         } else {
             isPermissionGranted.value = true
         }
+
+        while (!isPermissionGranted.value) {
+            delay(100)
+        }
+
+        delay(300) // optional short delay to stabilize before rendering
+        isInitialized.value = true
     }
 
-    if (isPermissionGranted.value) {
+    // Step 2: Show loading screen or actual UI
+    if (isInitialized.value) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -162,24 +183,45 @@ fun HomeScreen(navController: NavController,
                 .padding(horizontal = if (isTablet) 28.dp else 0.dp),
             contentAlignment = Alignment.TopCenter
         ) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = 600.dp)
-            ) {
+            Column(modifier = Modifier.widthIn(max = 600.dp)) {
                 homeScreen(
-                    context, account, navController, beatsfitViewModel, userViewModel
+                    context,
+                    account,
+                    navController,
+                    beatsfitViewModel,
+                    userViewModel,
+                    healthData
                 )
             }
         }
-     }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .background(Color(0xFF0f191f)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+
+        ) {
+
+            Row {
+                Text("Beats", fontFamily = quicksand, fontSize = 50.sp, color = Color.White)
+                Text("Fit", fontFamily = mistrully, fontSize = 48.sp, color = Color.White)
+
+            }
+        }
+    }
 }
+
 
 @Composable
 fun homeScreen(context: Context,
                account: GoogleSignInAccount,
                navController:NavController,
                beatsfitViewModel: BeatsfitViewModel,
-               userViewModel: UserViewModel) {
+               userViewModel: UserViewModel,
+               healthData: HealthData) {
 
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -191,7 +233,6 @@ fun homeScreen(context: Context,
     val locationViewModel: LocationViewModel = viewModel()
 
     val scrollState = rememberScrollState()
-    val healthData by beatsfitViewModel.healthData.collectAsState()
 
 
     // Animate position changes of the FAB using animateDpAsState
@@ -381,8 +422,28 @@ fun FitnessContent(healthData: HealthData, alphaVal:Float,userViewModel: UserVie
                         imageVector = Icons.Filled.Search,
                         contentDescription = "Search"
                     )
-                }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        val match = searchableItems.firstOrNull { item ->
+                            item.keywords.any { keyword ->
+                                keyword.contains(searchText.trim(), ignoreCase = true)
+                            }
+                        }
+
+                        if (match != null) {
+                            navController.navigate(match.route)
+                        } else {
+                            Toast.makeText(context, "Feature not found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
             )
+
+
 
 
             Spacer(modifier = Modifier.height(24.dp))

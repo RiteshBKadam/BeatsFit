@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-05-15T16:33:32.359365500Z">
+        <DropdownSelection timestamp="2025-07-10T10:08:52.004424600Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=1ad13ed30603" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=ZD22287YTT" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -20,7 +20,7 @@
             </Target>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=37929c947d84" />
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\KADAM\.android\avd\7_Inch_tablet.avd" />
               </handle>
             </Target>
           </targets>

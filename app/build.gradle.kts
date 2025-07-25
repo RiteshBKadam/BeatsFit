@@ -8,22 +8,22 @@ plugins {
 }
 
 android {
-    namespace = "com.example.beatsfit"
+    namespace = "com.riteshbkadam.beatsfitapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.beatsfit"
+        applicationId = "com.riteshbkadam.beatsfitapp"
         minSdk = 33
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
