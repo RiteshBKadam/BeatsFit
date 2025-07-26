@@ -52,6 +52,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.onesignal.OneSignal
 import com.riteshbkadam.beatsfitapp.R
 import com.riteshbkadam.beatsfitapp.room.data.User
 import com.riteshbkadam.beatsfitapp.util.GenereateToken
@@ -219,7 +220,8 @@ fun SignUp(
                             "first_name" to (account.givenName ?: ""),
                             "last_name" to (account.familyName ?: ""),
                             "email" to (account.email ?: "Unknown Email"),
-                            "mobile_number" to formatPhoneNumber(mobileNumber)
+                            "mobile_number" to formatPhoneNumber(mobileNumber),
+                            "oneSignalId" to OneSignal.User.onesignalId.toString()
                         )
 
                         db.collection("users")

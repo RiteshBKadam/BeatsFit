@@ -77,7 +77,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -115,11 +114,10 @@ fun HomeScreen(navController: NavController,
                   isPermissionGranted: MutableState<Boolean>) {
 
 
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
-    val isTablet = screenWidthDp >= 600
+
 
     val permissions = arrayOf(
+        Manifest.permission.POST_NOTIFICATIONS,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACTIVITY_RECOGNITION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -128,8 +126,11 @@ fun HomeScreen(navController: NavController,
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) {
-
+    ) {result->
+        val granted = result.all { it.value }
+        if (granted) {
+            isPermissionGranted.value = true
+        }
     }
 
     val allPermissionsGranted = permissions.all {
@@ -162,8 +163,7 @@ fun HomeScreen(navController: NavController,
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0f191f))
-                .padding(horizontal = if (isTablet) 28.dp else 0.dp),
+                .background(Color(0xFF0f191f)),
             contentAlignment = Alignment.TopCenter
         ) {
             Column(
@@ -245,7 +245,7 @@ fun homeScreen(context: Context,
                     FloatingActionButton(
                         onClick = { isExpanded = !isExpanded
 
-                            if (contacts.size > 1) {
+                            if (contacts.size >= 1) {
                                             makeCall(context, contacts[0].phoneNumber.toString())
                                         } else {
                                             Toast.makeText(context, "Not enough contacts to make a call", Toast.LENGTH_SHORT).show()

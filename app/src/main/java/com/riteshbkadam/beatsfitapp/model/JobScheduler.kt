@@ -5,6 +5,8 @@ import android.app.job.JobParameters
 import android.app.job.JobService
 import android.content.Context
 import android.util.Log
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.FirebaseApp
@@ -19,6 +21,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import org.json.JSONArray
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -44,10 +48,9 @@ class SyncJobService : JobService() {
 
 
         if (account != null) {
-            // Initialize ViewModel and fetch health data
             val viewModel = BeatsfitViewModel()
             val locationUtils = LocationUtils(context)
-            val locationViewModel = LocationViewModel() // Ensure you have this implemented properly
+            val locationViewModel = LocationViewModel()
 
             fetchDataAndSync(viewModel, account, context, userId, formattedDateTime, locationUtils, locationViewModel, params)
         }
@@ -69,7 +72,7 @@ class SyncJobService : JobService() {
             try {
                 var isLocationValid = false
                 var retryCount = 0
-                val maxRetries = 5 // Set a limit on retries to prevent infinite loop
+                val maxRetries = 5
 
                 // Retry fetching health data until valid location is available
                 while (!isLocationValid && retryCount < maxRetries) {
@@ -86,6 +89,21 @@ class SyncJobService : JobService() {
                         }
                     } catch (e: TimeoutCancellationException) {
                         continue
+                    }
+                    if (healthData.heartRate <60){
+                        FirebaseFirestore.getInstance().document(userId)
+                            .get()
+                            .addOnSuccessListener {
+                                var addedMembers=it.get("addedMembers") as List<String>
+                                var username=it.get("username")
+                                if(addedMembers!=null){
+                                        sendNotificationToContacts(
+                                            playerIds = addedMembers,
+                                            message = "$username heartbeat dropped to ${healthData.heartRate}  bpm!",
+                                            context = applicationContext
+                                        )
+                                    }
+                            }
                     }
 
                     isLocationValid = healthData.latitude != 0.0 && healthData.longitude != 0.0
@@ -144,3 +162,44 @@ class SyncJobService : JobService() {
         return false
     }
 }
+
+
+
+fun sendNotificationToContacts(
+    playerIds: List<String>, // OneSignal IDs
+    title: String = "Health Alert 🚨",
+    message: String = "Heartbeat is critically low!",
+    context: Context
+) {
+    val jsonBody = JSONObject().apply {
+        put("app_id", "36eb4abc-8abc-47a5-b9d7-c578abfb674b")
+        put("include_player_ids", JSONArray(playerIds))
+        put("headings", JSONObject().put("en", title))
+        put("contents", JSONObject().put("en", message))
+    }
+
+    val request = object : JsonObjectRequest(
+        Method.POST,
+        "https://onesignal.com/api/v1/notifications",
+        jsonBody,
+        { response -> Log.d("OneSignal", "Success: $response") },
+        { error -> Log.e("OneSignal", "Error: ${error.message}") }
+    ) {
+        override fun getHeaders(): Map<String, String> {
+            return mapOf(
+                "Content-Type" to "application/json",
+                "Authorization" to "Basic os_v2_app_g3vuvpekxrd2looxyv4kx63hjoyiidwdl2audrv7mdvyf5h5khme7cwqvvvxfldjh4o74auojncmju5meauus2n7mqlpifb5yjugsca"
+            )
+        }
+    }
+
+    Volley.newRequestQueue(context).add(request)
+}
+
+
+
+
+
+
+
+

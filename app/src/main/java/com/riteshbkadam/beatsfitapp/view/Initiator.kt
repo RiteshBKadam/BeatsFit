@@ -94,10 +94,10 @@ fun Initiator(
                             viewModel.insertUser(newUser)
                             saveLoginDetails(context,account,true)
                             val permissions = arrayOf(
+                                Manifest.permission.POST_NOTIFICATIONS,
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACTIVITY_RECOGNITION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.POST_NOTIFICATIONS
                             )
 
                             val allPermissionsGranted = permissions.all {
@@ -107,7 +107,6 @@ fun Initiator(
                             if (allPermissionsGranted) {
                                 navController.navigate("home_screen")
                             } else {
-                                // Navigate to a permission screen or stay and launch permission request
                                 navController.navigate("request_permissions")
                             }
                         } else {

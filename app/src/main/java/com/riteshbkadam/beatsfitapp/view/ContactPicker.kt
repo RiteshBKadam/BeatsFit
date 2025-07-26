@@ -34,10 +34,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.riteshbkadam.beatsfitapp.util.formatPhoneNumber
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.riteshbkadam.beatsfitapp.util.formatPhoneNumber
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,6 +64,7 @@ fun ContactPickerScreen(
         }
     }
 
+    val phoneNumbers=selectedContacts.map{formatPhoneNumber(it.phoneNumber)}
     Column(
         modifier = Modifier
             .background(Color(0xFF0f191f))
@@ -86,47 +87,67 @@ fun ContactPickerScreen(
                     } else {
                         val firestore = FirebaseFirestore.getInstance()
                         val userId = account.id
+                        firestore.collection("users")
+                            .whereIn("mobile_number", phoneNumbers)
+                            .get()
+                            .addOnSuccessListener { it ->
+                                var selectedContactOneSignalId = ""
+                                if (!it.isEmpty) {
+                                    for (doc in it.documents) {
+                                        selectedContactOneSignalId =
+                                            doc.get("oneSignalId").toString()
 
-                        val contactsData = selectedContacts.map { contact ->
-                            mapOf(
-                                "name" to contact.name,
-                                "phoneNumber" to formatPhoneNumber(contact.phoneNumber)
-                            )
-                        }
-                        if (userId != null) {
-                            firestore.collection("users")
-                                .document(userId)
-                                .update("addedMembers", contactsData)
-                                .addOnSuccessListener {
+                                    }
                                 }
-                                .addOnFailureListener { e ->
+
+                                val contactsData = selectedContacts.map { contact ->
+                                    mapOf(
+                                        "name" to contact.name,
+                                        "phoneNumber" to formatPhoneNumber(contact.phoneNumber),
+                                        "oneSignalId" to selectedContactOneSignalId
+                                    )
                                 }
-                            for (contact in contactsData) {
-                                firestore.collection("users").whereEqualTo("mobile_number", contact.get("phoneNumber"))
-                                    .get()
-                                    .addOnSuccessListener {
-                                        if(!it.isEmpty){
-                                            val doc=it.documents[0]
-                                            val thisDocId=doc.id
-                                            firestore.collection("users").document(thisDocId)
-                                                .update("addedBy", FieldValue.arrayUnion(userId))
-                                                .addOnSuccessListener {
-                                                }
-                                                .addOnFailureListener { e ->
-                                                }
-                                        }else{
+
+                                if (userId != null) {
+                                    firestore.collection("users")
+                                        .document(userId)
+                                        .update("addedMembers", contactsData)
+                                        .addOnSuccessListener {
                                         }
+                                        .addOnFailureListener { e ->
+                                        }
+                                    for (contact in contactsData) {
+                                        firestore.collection("users").whereEqualTo(
+                                            "mobile_number",
+                                            contact.get("phoneNumber")
+                                        )
+                                            .get()
+                                            .addOnSuccessListener {
+                                                if (!it.isEmpty) {
+                                                    val doc = it.documents[0]
+                                                    val thisDocId = doc.id
+                                                    firestore.collection("users")
+                                                        .document(thisDocId)
+                                                        .update(
+                                                            "addedBy",
+                                                            FieldValue.arrayUnion(userId)
+                                                        )
+                                                        .addOnSuccessListener {
+                                                        }
+                                                        .addOnFailureListener { e ->
+                                                        }
+                                                } else {
+                                                }
+                                            }
+                                            .addOnFailureListener {
+                                            }
                                     }
-                                    .addOnFailureListener {
-                                    }
+
+                                }
+
                             }
-
-                        }
-
-
+                        navController.navigate("members")
                     }
-                    navController.navigate("members")
-
                 },
                 enabled = selectedContacts.size in 1..maxSelected,
                 modifier = Modifier.padding(16.dp),

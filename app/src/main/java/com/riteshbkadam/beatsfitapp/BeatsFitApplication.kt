@@ -6,16 +6,17 @@ import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.widget.Toast
 import com.google.firebase.FirebaseApp
+import com.onesignal.OneSignal
 import com.riteshbkadam.beatsfitapp.model.SyncJobService
 
 class BeatsFitApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
         initializeFirebase()
-
         scheduleSyncJob()
+        OneSignal.initWithContext(this)
+        OneSignal.initWithContext(this,"36eb4abc-8abc-47a5-b9d7-c578abfb674b")
     }
 
     private fun initializeFirebase() {

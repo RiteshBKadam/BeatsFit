@@ -24,7 +24,7 @@ fun PermissionsScreen(navController: NavController) {
         val granted = result.all { it.value }
         if (granted) {
             navController.navigate("home_screen") {
-                popUpTo("request_permissions") { inclusive = true } // clear backstack
+                popUpTo("request_permissions") { inclusive = true }
             }
         }
     }
@@ -33,6 +33,7 @@ fun PermissionsScreen(navController: NavController) {
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACTIVITY_RECOGNITION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.POST_NOTIFICATIONS
     )
 
     LaunchedEffect(Unit) {

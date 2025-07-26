@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
     id("kotlin-kapt")
-
 }
+
 
 android {
     namespace = "com.riteshbkadam.beatsfitapp"
@@ -20,16 +20,17 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             isMinifyEnabled = true
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -45,6 +46,7 @@ android {
 dependencies {
 
     implementation(libs.ycharts)
+    implementation ("com.onesignal:OneSignal:[5.0.0, 5.99.99]")
 
 
     implementation(libs.androidx.core.ktx.v1120)
